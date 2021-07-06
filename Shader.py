@@ -7,6 +7,8 @@ import glm
 # de modew, view e projection e os fragmentos contendo apenas uma cor
 vertex_code = """
         attribute vec3 position;
+        attribute vec2 texture_coord;
+        varying vec2 out_texture;
                 
         uniform mat4 model;
         uniform mat4 view;
@@ -14,6 +16,7 @@ vertex_code = """
         
         void main(){
             gl_Position = projection * view * model * vec4(position,1.0);
+            out_texture = vec2(texture_coord);
         }
         """
 

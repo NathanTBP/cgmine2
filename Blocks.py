@@ -105,18 +105,16 @@ class Block:
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
         #Atribui a posição
-        mat_model = model()
+        mat_model = self.model()
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
         
         for face in range(6):
-            load_texture_from_block(face)
+            self.load_texture_from_block(face)
 
 
     def model(self):
     
-        angle = math.radians(angle)
-        
         matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
 
         # aplicando translacao
@@ -145,25 +143,25 @@ class Block:
         if face==0:
             #desenha topo
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         elif face==1:
             #desenha baixo
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         elif face==2:    
             #desenha frente
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         elif face==3:
             #desenha tras
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         elif face==4:  
             #desenha direita
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         elif face==5:
             #desenha esquerda
             if(self.type==3):
-                load_texture_from_file(3,'text/planks_oak.png')
+                self.load_texture_from_file(3,'text/planks_oak.png')
         
