@@ -1,6 +1,7 @@
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
+import glm
 
 from Window import Window
 from Shader import Shader
@@ -14,7 +15,7 @@ largura  = 900;
 cameraPos   = glm.vec3(0.0,  0.0,  1.0);
 cameraFront = glm.vec3(0.0,  0.0, -1.0);
 cameraUp    = glm.vec3(0.0,  1.0,  0.0);
-
+polygonal_mode = False
 
 class Mine:
     
@@ -51,8 +52,7 @@ class Mine:
         #tem que desenhar os blocos
 
     def onKeyEvent(self, window, key, scancode, action, mods):
-        
-        polygonal_mode = False
+       
         cameraSpeed = 0.3
 
         #Andar para frente (+Y)

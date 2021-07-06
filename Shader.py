@@ -1,6 +1,7 @@
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
+import glm
 
 #Codigos GLSL, cada vértice representado por um vetor de x,y,z,1 para coordenadas homogêneas do objeto e suas respectivas matrizes
 # de modew, view e projection e os fragmentos contendo apenas uma cor
