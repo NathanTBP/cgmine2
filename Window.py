@@ -10,8 +10,12 @@ class Window:
         glfw.make_context_current(self.window)
         self.onDraw = None
 
+
     def setKeyEvent (self, onKeyEvent):
         glfw.set_key_callback(self.window, onKeyEvent)
+
+    def setCursorEvent (self, onCursorEvent):
+        glfw.set_cursor_pos_callback(self.window, onCursorEvent)
 
     def setOnDraw (self, onDraw):
         self.onDraw = onDraw

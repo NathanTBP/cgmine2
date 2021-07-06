@@ -5,7 +5,7 @@
 from Mine import Mine
 
 def main():
-    t = Game()
+    t = Mine()
     t.run()
 
 if __name__ == "__main__":

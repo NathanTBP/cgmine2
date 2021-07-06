@@ -1,21 +1,30 @@
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
+import numpy as np
 import glm
 
 from Window import Window
 from Shader import Shader
+from Blocks import Block
 
 import math
 import time
 import random
 
-altura = 900;
-largura  = 900;
+altura_janela = 900;
+largura_janela  = 900;
 cameraPos   = glm.vec3(0.0,  0.0,  1.0);
-cameraFront = glm.vec3(0.0,  0.0, -1.0);
+cameraFront = glm.vec3(0.0,  0.0,  1.0);
 cameraUp    = glm.vec3(0.0,  1.0,  0.0);
 polygonal_mode = False
+
+#Ta copiado, não sei ainda
+firstMouse = True
+yaw = -90.0 
+pitch = 0.0
+lastX =  largura_janela/2
+lastY =  altura_janela/2
 
 class Mine:
     
@@ -28,18 +37,22 @@ class Mine:
 
     def __init__(self):
         #Inicialização da Janela
-        self.window = Window(altura, largura, "Trabalho 02")
+        self.window = Window(altura_janela, largura_janela, "Trabalho 02")
         self.shader = Shader()
 
         #Atribuição de eventos
         self.window.setOnDraw(self.onDraw)
         self.window.setKeyEvent(self.onKeyEvent)
+        self.window.setCursorEvent(self.onCursorEvent)
 
         #Dados referentes ao jogo
         self.gameOver = False
         self.blocks = []
 
-        random.seed(time.time())
+        block= Block(1,1,1,3)
+        self.blocks.append(block)
+
+        block.draw(self.shader.getProgram())
 
     def run(self):
         self.window.loop()
@@ -83,54 +96,48 @@ class Mine:
         if key == ord('P') and (action==1 or action==2) and polygonal_mode == True:
             self.inpMesh = False   
 
-#Ta copiado, não sei ainda
-firstMouse = True
-yaw = -90.0 
-pitch = 0.0
-lastX =  largura/2
-lastY =  altura/2
+    def onCursorEvent(window, xpos, ypos):
+        global firstMouse, cameraFront, yaw, pitch, lastX, lastY
+        if firstMouse:
+            lastX = xpos
+            lastY = ypos
+            firstMouse = False
 
-def mouse_event(window, xpos, ypos):
-    global firstMouse, cameraFront, yaw, pitch, lastX, lastY
-    if firstMouse:
+        xoffset = xpos - lastX
+        yoffset = lastY - ypos
         lastX = xpos
         lastY = ypos
-        firstMouse = False
 
-    xoffset = xpos - lastX
-    yoffset = lastY - ypos
-    lastX = xpos
-    lastY = ypos
+        sensitivity = 0.3 
+        xoffset *= sensitivity
+        yoffset *= sensitivity
 
-    sensitivity = 0.3 
-    xoffset *= sensitivity
-    yoffset *= sensitivity
+        yaw += xoffset
+        pitch += yoffset
 
-    yaw += xoffset;
-    pitch += yoffset;
+        if pitch >= 90.0: pitch = 90.0
+        if pitch <= -90.0: pitch = -90.0
 
-    
-    if pitch >= 90.0: pitch = 90.0
-    if pitch <= -90.0: pitch = -90.0
+        front = glm.vec3()
+        front.x = math.cos(glm.radians(yaw)) * math.cos(glm.radians(pitch))
+        front.y = math.sin(glm.radians(pitch))
+        front.z = math.sin(glm.radians(yaw)) * math.cos(glm.radians(pitch))
+        cameraFront = glm.normalize(front)
 
-    front = glm.vec3()
-    front.x = math.cos(glm.radians(yaw)) * math.cos(glm.radians(pitch))
-    front.y = math.sin(glm.radians(pitch))
-    front.z = math.sin(glm.radians(yaw)) * math.cos(glm.radians(pitch))
-    cameraFront = glm.normalize(front)
-   
-    glfw.set_key_callback(window,key_event)
-    glfw.set_cursor_pos_callback(window, mouse_event)
+        def view():
+            global cameraPos, cameraFront, cameraUp
+            mat_view = glm.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+            mat_view = np.array(mat_view)
+            return mat_view
 
-    def view():
-        global cameraPos, cameraFront, cameraUp
-        mat_view = glm.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        mat_view = np.array(mat_view)
-        return mat_view
+        def projection():
+            global altura_janela, largura_janela 
 
-    def projection():
-        global altura, largura 
-        # perspective parameters: fovy, aspect, near, far
-        mat_projection = glm.perspective(glm.radians(45.0), largura/altura, 0.1, 1000.0)
-        mat_projection = np.array(mat_projection)    
-        return mat_projection
+            fov = glm.radians(45.0)
+            aspect = largura_janela/altura_janela
+            znear = 0.1
+            zfar = 500
+
+            mat_projection = glm.perspective(fov,aspect, znear, zfar)
+            mat_projection = np.array(mat_projection)    
+            return mat_projection
