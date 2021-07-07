@@ -34,7 +34,7 @@ class Mine:
     inpTx = 0 # Translação em X
     inpTy = 0 # Translação em Y
     inpTz = 0 # Pulo
-    polygonal_mode = False #Malha poligonal
+    polygonal_mode = True #Malha poligonal
 
     def __init__(self):
         #Inicialização da Janela
@@ -52,23 +52,41 @@ class Mine:
 
         block= Block(1,1,1,3)
         self.blocks.append(block)
-        print(block.type)
 
-        block.draw(self.shader.getProgram())
 
     def run(self):
         self.window.loop()
 
     def onDraw(self):
-        #Para desenhar, limpa o buffer de cores
-        glClear(GL_COLOR_BUFFER_BIT)
+        #Para desenhar, limpa o buffer de cores e pega o programa
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1.0, 1.0, 1.0, 1.0)
-      
-        #tem que desenhar os blocos
+        programa=self.shader.getProgram()
+
+        #verifica se deve usar o modo polygonal
+        if self.polygonal_mode==True:
+            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+        if self.polygonal_mode==False:
+            glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+
+        #desenha o cenario
+        self.blocks[0].draw(programa)
+
+        #atualiza as matrizes view e projection
+        mat_view = self.view()
+        loc_view = glGetUniformLocation(programa, "view")
+        glUniformMatrix4fv(loc_view, 1, GL_FALSE, mat_view)
+
+        mat_projection = self.projection()
+        loc_projection = glGetUniformLocation(programa, "projection")
+        glUniformMatrix4fv(loc_projection, 1, GL_FALSE, mat_projection) 
+        
+
+       
 
     def onKeyEvent(self, window, key, scancode, action, mods):
        
-        cameraSpeed = 0.3
+        cameraSpeed = 0.5
 
         #Andar para frente (+Y)
         if key == ord('W') and (action==1 or action==2):
@@ -91,11 +109,11 @@ class Mine:
             #vaiterqueterumafunção prapulo
 
         #Ativar a visão poligonal
-        if key == ord('P') and (action==1 or action==2) and self.polygonal_mode == False:
+        if key == ord('P') and (action==1) and self.polygonal_mode == False:
             self.polygonal_mode = True
 
         #Desativar a visão poligonal
-        if key == ord('P') and (action==1 or action==2) and self.polygonal_mode == True:
+        if key == ord('P') and (action==2) and self.polygonal_mode == True:
            self.polygonal_mode = False   
 
     def onCursorEvent(self,window, xpos, ypos):
@@ -110,7 +128,7 @@ class Mine:
         self.lastX = xpos
         self.lastY = ypos
 
-        sensitivity = 0.3 
+        sensitivity = 0.2 
         xoffset *= sensitivity
         yoffset *= sensitivity
 
@@ -126,19 +144,19 @@ class Mine:
         front.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
         self.cameraFront = glm.normalize(front)
 
-        def view(self):
+    def view(self):
 
-            mat_view = glm.lookAt(self.cameraPos, self.cameraPos + self.cameraFront, self.cameraUp)
-            mat_view = np.array(mat_view)
-            return mat_view
+        mat_view = glm.lookAt(self.cameraPos, self.cameraPos + self.cameraFront, self.cameraUp)
+        mat_view = np.array(mat_view)
+        return mat_view
 
-        def projection(self):
+    def projection(self):
 
-            fov = glm.radians(45.0)
-            aspect = self.largura_janela/self.altura_janela
-            znear = 0.1
-            zfar = 500
+        fov = glm.radians(45.0)
+        aspect = self.largura_janela/self.altura_janela
+        znear = 0.1
+        zfar = 10
 
-            mat_projection = glm.perspective(fov,aspect, znear, zfar)
-            mat_projection = np.array(mat_projection)    
-            return mat_projection
+        mat_projection = glm.perspective(fov,aspect, znear, zfar)
+        mat_projection = np.array(mat_projection)    
+        return mat_projection

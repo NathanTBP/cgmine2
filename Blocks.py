@@ -21,51 +21,58 @@ class Block:
         self.z=z
 
         self.type = typeofblock
+        cube_vertices_list = []
+        cube_faces_list = []
         vertices_list = []
-        faces_list = []
         textures_coord_list = []
         self.faces_textures_ids = []
 
         #Cria os 8 vértices do cubo
-        vertices_list.append((0,0,0))
-        vertices_list.append((0,0,1))
-        vertices_list.append((0,1,0))
-        vertices_list.append((0,1,1))
-        vertices_list.append((1,0,0))
-        vertices_list.append((1,0,1))
-        vertices_list.append((1,1,0))
-        vertices_list.append((1,1,1))
+        cube_vertices_list.append((0,0,0))
+        cube_vertices_list.append((0,0,1))
+        cube_vertices_list.append((0,1,0))
+        cube_vertices_list.append((0,1,1))
+        cube_vertices_list.append((1,0,0))
+        cube_vertices_list.append((1,0,1))
+        cube_vertices_list.append((1,1,0))
+        cube_vertices_list.append((1,1,1))
 
-        print(vertices_list)
+        print(cube_vertices_list)
 
         #Cria as faces do cubo (com 2 triangulos cada)
 
         #top
-        faces_list.append((1,3,5))
-        faces_list.append((7,3,5))
+        cube_faces_list.append((1,7,3))
+        cube_faces_list.append((1,7,5))
         #bottom
-        faces_list.append((0,2,4))
-        faces_list.append((6,2,4))
+        cube_faces_list.append((4,2,6))
+        cube_faces_list.append((4,2,0))
         #front
-        faces_list.append((4,5,6))
-        faces_list.append((7,5,6))
+        cube_faces_list.append((5,6,7))
+        cube_faces_list.append((5,6,4))
         #behind
-        faces_list.append((0,1,2))
-        faces_list.append((3,1,2))
+        cube_faces_list.append((3,1,0))
+        cube_faces_list.append((3,1,2))
         #right
-        faces_list.append((6,2,7))
-        faces_list.append((3,2,7))
+        cube_faces_list.append((7,2,3))
+        cube_faces_list.append((7,2,6))
         #left
-        faces_list.append((0,1,4))
-        faces_list.append((5,1,4))
+        cube_faces_list.append((1,4,5))
+        cube_faces_list.append((1,4,0))
 
-        print(faces_list)
+        print(cube_faces_list)
 
-        #Todos triangulos retangulos bonitinhos de mesma orientação
-        textures_coord_list.append((1,0))
-        textures_coord_list.append((0,1))
-        textures_coord_list.append((0,0))
+        #Para cada face traingular do cubo (2 para cada face real)
+        for tri_face in cube_faces_list:
+            #Adiciona, da lista de vértices do cubo, os 3 vértices correspondentes a aquela face e suas texturas
+            vertices_list.append(cube_vertices_list[tri_face[0]])
+            vertices_list.append(cube_vertices_list[tri_face[1]])
+            vertices_list.append(cube_vertices_list[tri_face[2]])
+            textures_coord_list.append((1,0))
+            textures_coord_list.append((0,1))
+            textures_coord_list.append((0,0))
 
+        print(vertices_list)
         print(textures_coord_list)
 
         #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
@@ -75,7 +82,7 @@ class Block:
 
         #Cria os buffers para mostrar o bloco na tela 
 
-        total_vertices = 8 #É um cubo
+        total_vertices = len(vertices_list) #É um cubo, mas tem 36 vértices 
 
         #Aloca buffers
         self.buffer = glGenBuffers(2) 
@@ -83,10 +90,12 @@ class Block:
         #Prepara vertices
         self.vertices = np.zeros(total_vertices, [("position", np.float32, 3)]) # tres coordenadas de objeto
         self.vertices['position'] = np.array(vertices_list)
-        
+    
         #Prepara texturas
         self.textures = np.zeros(len(textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas de textura
         self.textures['position'] = textures_coord_list
+
+        print(len(self.vertices))
 
         #Binda vertices
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[0])
@@ -116,10 +125,13 @@ class Block:
         glEnableVertexAttribArray(loc_texture_coord)
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
-        #Atribui a posição
+        #Atribui a posição usando a matriz model
         mat_model = self.model()
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
+
+        #glBindTexture(GL_TEXTURE_2D, 3)
+        #glDrawArrays(GL_TRIANGLES,0,36)
         
         #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
         for face in range(6):
@@ -155,8 +167,14 @@ class Block:
     def load_textures(self):
 
         #bloco de madeira processada de carvalho, 6 faces iguais com a textura de id 3
+        if self.type==1:
+            self.load_texture_from_file(1,'dirt.png')
         if self.type==3:
             self.load_texture_from_file(3,'text/planks_oak.png')
+            self.load_texture_from_file(1,'text/dirt.png')
             for i in range(6):
-                self.faces_textures_ids.append(3)
+                if i>1:
+                    self.faces_textures_ids.append(3)
+                else:
+                    self.faces_textures_ids.append(1)
         
