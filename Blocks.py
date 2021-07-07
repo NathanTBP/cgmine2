@@ -24,6 +24,7 @@ class Block:
         vertices_list = []
         faces_list = []
         textures_coord_list = []
+        self.faces_textures_ids = []
 
         #Cria os 8 vértices do cubo
         vertices_list.append((0,0,0))
@@ -34,6 +35,8 @@ class Block:
         vertices_list.append((1,0,1))
         vertices_list.append((1,1,0))
         vertices_list.append((1,1,1))
+
+        print(vertices_list)
 
         #Cria as faces do cubo (com 2 triangulos cada)
 
@@ -56,10 +59,19 @@ class Block:
         faces_list.append((0,1,4))
         faces_list.append((5,1,4))
 
+        print(faces_list)
+
         #Todos triangulos retangulos bonitinhos de mesma orientação
         textures_coord_list.append((1,0))
         textures_coord_list.append((0,1))
         textures_coord_list.append((0,0))
+
+        print(textures_coord_list)
+
+        #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
+        self.load_textures()
+
+        print(self.faces_textures_ids)
 
         #Cria os buffers para mostrar o bloco na tela 
 
@@ -69,11 +81,11 @@ class Block:
         self.buffer = glGenBuffers(2) 
 
         #Prepara vertices
-        self.vertices = np.zeros(total_vertices, [("position", np.float32, 3)])
+        self.vertices = np.zeros(total_vertices, [("position", np.float32, 3)]) # tres coordenadas de objeto
         self.vertices['position'] = np.array(vertices_list)
         
         #Prepara texturas
-        self.textures = np.zeros(len(textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas
+        self.textures = np.zeros(len(textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas de textura
         self.textures['position'] = textures_coord_list
 
         #Binda vertices
@@ -94,7 +106,7 @@ class Block:
         offset = ctypes.c_void_p(0)
         loc_vertices = glGetAttribLocation(program, "position")
         glEnableVertexAttribArray(loc_vertices)
-        glVertexAttribPointer(loc_vertices, 2, GL_FLOAT, False, stride, offset)
+        glVertexAttribPointer(loc_vertices, 3, GL_FLOAT, False, stride, offset)
 
         #Mudar os valores de texturas no GLSL (bind)
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[1])
@@ -109,9 +121,12 @@ class Block:
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
         
+        #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
         for face in range(6):
-            self.load_texture_from_block(face)
-
+            #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
+            v_face=face*6
+            glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face])
+            glDrawArrays(GL_TRIANGLES,v_face,v_face+6)
 
     def model(self):
     
@@ -135,33 +150,13 @@ class Block:
         img_width = img.size[0]
         img_height = img.size[1]
         image_data = img.tobytes("raw", "RGB", 0, -1)
-        #image_data = np.array(list(img.getdata()), np.uint8)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data)
 
-    def load_texture_from_block(self,face):
+    def load_textures(self):
 
-        if face==0:
-            #desenha topo
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
-        elif face==1:
-            #desenha baixo
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
-        elif face==2:    
-            #desenha frente
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
-        elif face==3:
-            #desenha tras
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
-        elif face==4:  
-            #desenha direita
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
-        elif face==5:
-            #desenha esquerda
-            if(self.type==3):
-                self.load_texture_from_file(3,'text/planks_oak.png')
+        #bloco de madeira processada de carvalho, 6 faces iguais com a textura de id 3
+        if self.type==3:
+            self.load_texture_from_file(3,'text/planks_oak.png')
+            for i in range(6):
+                self.faces_textures_ids.append(3)
         
