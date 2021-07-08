@@ -50,7 +50,7 @@ class Mine:
 
         self.player = Player(self.altura_janela, self.largura_janela)
 
-        block= Block(0,0,0,3)
+        block= Block(0,0,0,4)
         self.blocks.append(block)
 
         self.lastTime = time.time()
