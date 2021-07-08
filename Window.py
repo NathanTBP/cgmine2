@@ -9,13 +9,24 @@ class Window:
         self.window = glfw.create_window(width, height, title, None, None)
         glfw.make_context_current(self.window)
         self.onDraw = None
-
+        self.cursorLocked = False
 
     def setKeyEvent (self, onKeyEvent):
         glfw.set_key_callback(self.window, onKeyEvent)
 
     def setCursorEvent (self, onCursorEvent):
         glfw.set_cursor_pos_callback(self.window, onCursorEvent)
+
+    def setScrollEvent (self, onScrollEvent):
+        glfw.set_scroll_callback(self.window, onScrollEvent)
+
+    def invertCursorLocked (self):
+        if self.cursorLocked:
+            glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_NORMAL)
+        else:
+            glfw.set_input_mode(self.window, glfw.CURSOR, glfw.CURSOR_DISABLED)
+
+        self.cursorLocked = not self.cursorLocked
 
     def setOnDraw (self, onDraw):
         self.onDraw = onDraw

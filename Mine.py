@@ -19,35 +19,32 @@ class Mine:
     altura_janela = 900
     largura_janela  = 900
 
-
-
-    #Ta copiado, não sei ainda
-    firstMouse = True
-    yaw = -90.0 
-    pitch = 0.0
-    lastX =  largura_janela/2
-    lastY =  altura_janela/2
-
     
     #Inputs (game controller)
     lateralInt = 0  # Translação em X
     forwardInt = 0  # Translação em Y
     verticalInt = 0  # Pulo
-    polygonal_mode = True  # Malha poligonal
+
+    scrollXOffset = 0
+    scrollYOffset = 0
+
+    polygonal_mode = False  # Malha poligonal
 
     gameStep = 1/60
 
     def __init__(self):
-        #Inicialização da Janela
+        # Inicialização da Janela
         self.window = Window(self.altura_janela, self.largura_janela, "Trabalho 02")
         self.shader = Shader()
 
-        #Atribuição de eventos
+        # Atribuição de eventos
         self.window.setOnDraw(self.onDraw)
         self.window.setKeyEvent(self.onKeyEvent)
         self.window.setCursorEvent(self.onCursorEvent)
+        self.window.setScrollEvent(self.onScrollEvent)
+        self.window.invertCursorLocked()
 
-        #Dados referentes ao jogo
+        # Dados referentes ao jogo
         self.gameOver = False
         self.blocks = []
 
@@ -57,6 +54,9 @@ class Mine:
         self.blocks.append(block)
 
         self.lastTime = time.time()
+
+        self.mouseX = self.largura_janela/2
+        self.mouseY = self.altura_janela/2
 
     def run(self):
         self.window.loop()
@@ -92,59 +92,53 @@ class Mine:
 
         mult = action*2-1
 
-        # cameraSpeed = 0.5
-        #
-        # #Andar para frente (+Y)
-        # if key == ord('W') and (action==1 or action==2):
-        #     self.cameraPos += cameraSpeed * self.cameraFront
-        #
-        # #Andar para frente (-Y)
-        # if key == ord('S') and (action==1 or action==2):
-        #     self.cameraPos -= cameraSpeed * self.cameraFront
-        #
-        # #Andar para a direita
-        # if key == ord('D') and (action==1 or action==2):
-        #     self.cameraPos += glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
-        #
-        # #Andar para a esquerda
-        # if key == ord('A') and (action==1 or action==2):
-        #     self.cameraPos -= glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
+        # Andar para frente
+        if key == glfw.KEY_W:
+            self.forwardInt += mult
 
-        #Pular
-        #if key == ord(' ') and (action==1 or action==2):
-            #vaiterqueterumafunção prapulo
+        # Andar para frente
+        if key == glfw.KEY_S:
+            self.forwardInt -= mult
 
-        #Ativar e desativar a visão poligonal
-        if key == ord('P') and (action==1):
+        # Andar para a direita
+        if key == glfw.KEY_D:
+            self.lateralInt += mult
+
+        # Andar para a esquerda
+        if key == glfw.KEY_A:
+            self.lateralInt -= mult
+
+        # Subir
+        if key == glfw.KEY_SPACE:
+            self.verticalInt += mult
+
+        # Descer
+        if key == glfw.KEY_LEFT_SHIFT:
+            self.verticalInt -= mult
+
+        # Ativar e desativar a visão poligonal
+        if key == glfw.KEY_P and action == 1:
             self.polygonal_mode = not self.polygonal_mode
 
+        if key == glfw.KEY_ESCAPE and action == 1:
+            self.window.invertCursorLocked()
+
     def onCursorEvent(self, window, xpos, ypos):
+        # print(xpos, ypos)
+        self.mouseX = xpos
+        self.mouseY = ypos
 
-        if self.firstMouse:
-            self.lastX = xpos
-            self.lastY = ypos
-            self.firstMouse = False
-
-        xoffset = xpos - self.lastX
-        yoffset = self.lastY - ypos
-        self.lastX = xpos
-        self.lastY = ypos
-
-        sensitivity = 0.2 
-        xoffset *= sensitivity
-        yoffset *= sensitivity
-
-        self.yaw += xoffset
-        self.pitch += yoffset
-
-        if self.pitch >= 90.0: self.pitch = 90.0
-        if self.pitch <= -90.0: self.pitch = -90.0
-
-        front = glm.vec3()
-        front.x = math.cos(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
-        front.y = math.sin(glm.radians(self.pitch))
-        front.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
-        # self.cameraFront = glm.normalize(front)
+    def onScrollEvent(self, window, xoffset, yoffset):
+        self.scrollXOffset = xoffset
+        self.scrollYOffset = yoffset
 
     def physicsTick(self):
-        pass
+        self.player.movePlayer(self.forwardInt, self.lateralInt, self.verticalInt)
+        self.player.lookAround(self.mouseX, self.mouseY)
+        self.player.zoom(self.scrollYOffset)
+
+        self.scrollXOffset = 0.0
+        self.scrollYOffset = 0.0
+
+
+

@@ -134,7 +134,7 @@ class Block:
         #glDrawArrays(GL_TRIANGLES,0,36)
         
         #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
-        for face in range(6):
+        for face in range(12):
             #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
             v_face=face*6
             glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face])
@@ -168,13 +168,10 @@ class Block:
 
         #bloco de madeira processada de carvalho, 6 faces iguais com a textura de id 3
         if self.type==1:
-            self.load_texture_from_file(1,'dirt.png')
+            self.load_texture_from_file(1,'text/dirt.png')
         if self.type==3:
             self.load_texture_from_file(3,'text/planks_oak.png')
-            self.load_texture_from_file(1,'text/dirt.png')
-            for i in range(6):
-                if i>1:
-                    self.faces_textures_ids.append(3)
-                else:
-                    self.faces_textures_ids.append(1)
-        
+            # self.load_texture_from_file(1,'text/dirt.png')
+            for i in range(12):
+                self.faces_textures_ids.append(3)
+
