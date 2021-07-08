@@ -53,11 +53,13 @@ class Mine:
         self.gameOver = False
         self.objects = []
 
-        multiblock = MultiBlock(4)
-        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 15, 15)
-        self.objects += multiblock.placeBlocks()
+   
 
-        self.objects.append(House((3, 1, 3), 6, 7, 3))
+    #    multiblock = MultiBlock(4)
+    #    multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 15, 15)
+    #    self.objects += multiblock.placeBlocks()
+
+    #    self.objects.append(House((3, 1, 3), 6, 7, 3))
 
         self.player = Player(self.altura_janela, self.largura_janela)
         self.player.setLimit(self.boxSize, self.heightSize)
@@ -71,6 +73,9 @@ class Mine:
             self.objects.append(block)
             block= Block(i+1,1,6,270,i+1)
             self.objects.append(block)
+
+        sky = Block(0,0,0,0,13)
+        self.objects.append(sky)
 
         print(len(self.objects))
 

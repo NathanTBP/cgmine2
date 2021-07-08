@@ -19,6 +19,7 @@ from PIL import Image
 # Bau 10 1
 # Grama com Carrinho 11 3
 # Grama com Carrinho torto 12 3
+# Ceu 13 3
 
 
 class Block:
@@ -87,13 +88,9 @@ class Block:
             vertices_list.append(cube_vertices_list[face[5]])
             textures_coord_list.append((1,0)) #sup esquerdo
 
-        # print(vertices_list)
-        # print(textures_coord_list)
-
         #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
-        # print(self.faces_textures_ids)
 
         #Cria os buffers para mostrar o bloco na tela 
 
@@ -172,6 +169,10 @@ class Block:
 
         # aplicando rotação em z
         matrix_transform = glm.rotate(matrix_transform, math.radians(self.rot), glm.vec3(0, 0, 1))
+
+        if self.type == 13:
+            matrix_transform = glm.translate(matrix_transform, glm.vec3(0, 0, -15))
+            matrix_transform = glm.scale(matrix_transform, glm.vec3(35, 35, 35))
 
         matrix_transform = np.array(matrix_transform).T  # pegando a transposta da matriz (glm trabalha com ela invertida)
         
@@ -310,3 +311,14 @@ class Block:
             self.faces_textures_ids.append(16)
             self.faces_textures_ids.append(1)
             self.faces_textures_ids.append(0)
+        
+        if self.type==13: # Ceu
+            self.qtd_texturas = 3
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(17,'textures/sky_top.png')
+            self.load_texture_from_file(18,'textures/sky_side.png')
+            self.load_texture_from_file(19,'textures/sky_bottom.png')
+            self.faces_textures_ids.append(17)
+            self.faces_textures_ids.append(18)
+            self.faces_textures_ids.append(19)
+            self.isFixed = False
