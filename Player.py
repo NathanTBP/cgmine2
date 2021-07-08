@@ -17,8 +17,14 @@ class Player:
         self.fov = 45
 
         self.firstMouse = True
+        self.lastX = 0
+        self.lastY = 0
         self.yaw = -90.0
         self.pitch = 0
+
+        self.boxHeight = 0
+        self.boxSize = 0
+        self.heightSize = 4
 
         pass
 
@@ -38,7 +44,7 @@ class Player:
         return mat_projection
 
     def draw(self, program):
-        # atualiza as matrizes view e projection
+        print(self.cameraPos)
         mat_view = self.getView()
         loc_view = glGetUniformLocation(program, "view")
         glUniformMatrix4fv(loc_view, 1, GL_FALSE, mat_view)
@@ -54,6 +60,10 @@ class Player:
         self.cameraPos += forwardVector * forwardIntensity * self.cameraSpeed
         self.cameraPos += lateralVector * lateralIntensity * self.cameraSpeed
         self.cameraPos[1] += verticalIntensity * self.cameraSpeed
+
+        self.cameraPos[0] = max(min(self.cameraPos[0], self.boxSize), -self.boxSize)
+        self.cameraPos[2] = max(min(self.cameraPos[2], self.boxSize), -self.boxSize)
+        self.cameraPos[1] = max(min(self.cameraPos[1], self.boxHeight), 0+self.heightSize)
 
     def lookAround(self, xpos, ypos):
         if self.firstMouse:
@@ -91,3 +101,14 @@ class Player:
             self.fov = 20.0
         elif self.fov > 70.0:
             self.fov = 70.0
+
+    def getPlayerPos(self):
+        return self.cameraPos[0], self.cameraPos[1], self.cameraPos[2]
+
+    def getPlayerHeight(self):
+        return self.heightSize
+
+    def setLimit(self, boxSize, heightSize):
+        self.boxSize = boxSize
+        self.boxHeight = heightSize
+

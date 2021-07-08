@@ -22,8 +22,8 @@ class Mine:
     
     #Inputs (game controller)
     lateralInt = 0  # Translação em X
-    forwardInt = 0  # Translação em Y
-    verticalInt = 0  # Pulo
+    forwardInt = 0  # Translação em Z
+    verticalInt = 0  # Translação em Y
 
     scrollXOffset = 0
     scrollYOffset = 0
@@ -31,6 +31,9 @@ class Mine:
     polygonal_mode = False  # Malha poligonal
 
     gameStep = 1/60
+
+    boxSize = 124  # x e z
+    heightSize = 255  # y
 
     def __init__(self):
         # Inicialização da Janela
@@ -49,6 +52,7 @@ class Mine:
         self.blocks = []
 
         self.player = Player(self.altura_janela, self.largura_janela)
+        self.player.setLimit(self.boxSize, self.heightSize)
 
         block= Block(0,0,0,3)
         self.blocks.append(block)
@@ -139,6 +143,7 @@ class Mine:
 
         self.scrollXOffset = 0.0
         self.scrollYOffset = 0.0
+
 
 
 

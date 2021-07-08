@@ -47,4 +47,4 @@ class Window:
         
     def close (self):
         glfw.set_window_should_close(self.window, True)
-        
+
