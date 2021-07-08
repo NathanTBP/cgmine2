@@ -7,24 +7,35 @@ import glm
 from PIL import Image
 
 # Lista de blocos e seus códigos (tipo do bloco,range de id de texturas):
-# Grama 1 1
+# Grama 1 3
 # Areia 2 1
-# Madeira processada de Carvalho 3 3
-# Tronco de Carvalho 4 2
+# Terra 3 1
+# Madeira processada de Carvalho 4 1
+# Madeira processada Branca 5 1
+# Tronco de Carvalho 6 2
+# Folha de Carvalho 7 1
+# Craft Table 8 3
+# Fornalha 9 3
+# Bau 10 1
+# Grama com Carrinho 11 3
+# Grama com Carrinho torto 12 3
+
 
 class Block:
 
-    def __init__ (self,x,y,z,typeofblock):
+    def __init__ (self,x,y,z,rot,typeofblock):
 
         self.x=x
         self.y=y
         self.z=z
-
+        self.rot=rot
         self.type = typeofblock
         cube_vertices_list = []
         cube_faces_list = []
         vertices_list = []
+        list_of_vertices_list = []
         textures_coord_list = []
+        list_of_textures_coord_list = []
         self.faces_textures_ids = []
 
         #Cria os 8 vértices do cubo
@@ -42,9 +53,7 @@ class Block:
         #Cria as faces do cubo (inferior esquerdo, inferior direito, superior direito) (inferior esquerdo,superior direito,superior esquerdo)
 
         #top DHG DGC v
-        cube_faces_list.append((3,7,6,3,6,2)) 
-        #bottom AEF AFB v
-        cube_faces_list.append((0,4,5,0,5,1)) 
+        cube_faces_list.append((3,7,6,3,6,2))
         #front BFH BHD v
         cube_faces_list.append((1,5,7,1,7,3)) 
         #behind EAC ECG v
@@ -52,7 +61,9 @@ class Block:
         #right FEG FGH 
         cube_faces_list.append((5,4,6,5,6,7)) 
         #left ABD ADC
-        cube_faces_list.append((0,1,3,0,3,2))  
+        cube_faces_list.append((0,1,3,0,3,2))
+        #bottom AEF AFB v
+        cube_faces_list.append((0,4,5,0,5,1))   
 
         print(cube_faces_list)
 
@@ -72,8 +83,6 @@ class Block:
             textures_coord_list.append((1,1)) #sup direito
             vertices_list.append(cube_vertices_list[face[5]])
             textures_coord_list.append((1,0)) #sup esquerdo
-            
-            
 
         print(vertices_list)
         print(textures_coord_list)
@@ -133,14 +142,18 @@ class Block:
         #Atribui a posição usando a matriz model
         mat_model = self.model()
         loc_model = glGetUniformLocation(program, "model")
-        glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
-      
-        #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
-        for face in range(6):
-            #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
-            v_face=face*6
-            glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face])
-            glDrawArrays(GL_TRIANGLES,v_face,v_face+6)
+        glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)    
+
+
+        glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[0]) #Topo
+        glMultiDrawArrays(GL_TRIANGLES,0,6,6)  
+
+        glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[1]) #Laterais
+        glMultiDrawArrays(GL_TRIANGLES,6,24,6) 
+
+        glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[2]) #Baixo
+        glMultiDrawArrays(GL_TRIANGLES,24,36,6)  
+
 
     def model(self):
     
@@ -149,7 +162,8 @@ class Block:
         # aplicando translacao
         matrix_transform = glm.translate(matrix_transform, glm.vec3(self.x, self.y, self.z))
 
-        matrix_transform = glm.rotate(matrix_transform, math.radians(90), glm.vec3(0, 0, 1))
+        # aplicando rotação em z
+        matrix_transform = glm.rotate(matrix_transform, math.radians(self.rot), glm.vec3(0, 0, 1))
 
         matrix_transform = np.array(matrix_transform).T # pegando a transposta da matriz (glm trabalha com ela invertida)
         
@@ -169,31 +183,122 @@ class Block:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, image_data)
 
     def load_textures(self):
+        #Topo, lateral e baixo
 
-        #bloco de madeira processada de carvalho, 6 faces iguais com a textura de id 3
-        if self.type==1:
-            self.load_texture_from_file(1,'dirt.png')
-        if self.type==3:
-            self.qtd_texturas = 10
-            glEnable(GL_TEXTURE_2D)
+# Lista de blocos e seus códigos (tipo do bloco,range de id de texturas):
+# Grama 1 3
+# Areia 2 1
+# Terra 3 1
+# Madeira processada de Carvalho 4 1
+# Madeira processada Branca 5 1
+# Tronco de Carvalho 6 2
+# Folha de Carvalho 7 1
+# Craft Table 8 3
+# Fornalha 9 3
+# Bau 10 1
+# Grama com Carrinho 11 3
+# Grama com Carrinho torto 12 3
+
+        glEnable(GL_TEXTURE_2D) # Liga a textura
+        self.load_texture_from_file(1,'textures/grass_side.png')
+        if self.type==1: # Grama
+            self.qtd_texturas = 3
             texturas = glGenTextures(self.qtd_texturas)
-            self.load_texture_from_file(1,'textures/dirt.png')
-            self.load_texture_from_file(2,'textures/sand.png')
-            self.load_texture_from_file(3,'textures/planks_oak.png')
-            self.load_texture_from_file(4,'textures/planks_birch.png')
-            self.load_texture_from_file(5,'textures/log_oak.png')
-            self.load_texture_from_file(6,'textures/log_oak_top.png')
-            for i in range(6):
+            self.load_texture_from_file(0,'textures/dirt.png')
+            self.load_texture_from_file(1,'textures/grass_side.png')
+            self.load_texture_from_file(2,'textures/grass_top.png')
+
+            self.faces_textures_ids.append(2)
+            self.faces_textures_ids.append(1)
+            self.faces_textures_ids.append(0)
+
+        if self.type==2: #Areia 
+            self.qtd_texturas = 1
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(3,'textures/sand.png')
+            for i in range(3):
+                self.faces_textures_ids.append(3)
+
+        if self.type==3: # Terra
+            self.qtd_texturas = 1
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(4,'textures/dirt.png')
+            for i in range(3):
+                self.faces_textures_ids.append(4)  
+
+        if self.type==4: # Carvalho
+            self.qtd_texturas = 1
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(5,'textures/planks_oak.png')
+            for i in range(3):
                 self.faces_textures_ids.append(5)
 
-        if self.type==4:
-            self.qtd_texturas = 10
-            glEnable(GL_TEXTURE_2D)
+        if self.type==5: # Branca
+            self.qtd_texturas = 1
             texturas = glGenTextures(self.qtd_texturas)
-            self.load_texture_from_file(5,'textures/log_oak.png')
-            self.load_texture_from_file(6,'textures/log_oak_top.png')
-            for i in range(2):
+            self.load_texture_from_file(6,'textures/planks_birch.png')
+            for i in range(3):
                 self.faces_textures_ids.append(6)
-            for i in range(4):
-                self.faces_textures_ids.append(5)
+
+        if self.type==6: #Tronco
+            self.qtd_texturas = 2
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(7,'textures/log_oak.png')
+            self.load_texture_from_file(8,'textures/log_oak_top.png')
+            self.faces_textures_ids.append(8)
+            self.faces_textures_ids.append(7)
+            self.faces_textures_ids.append(8)
+
+        if self.type==7: #Folha
+            self.qtd_texturas = 1
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(9,'textures/leaves_oak.png')
+            for i in range(3):
+                self.faces_textures_ids.append(9)
+
+        if self.type==8: # Craft Table
+            self.qtd_texturas = 3
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(10,'textures/crafting_table_top.png')
+            self.load_texture_from_file(11,'textures/crafting_table_side.png')
+            self.load_texture_from_file(5,'textures/planks_oak.png')
+            self.faces_textures_ids.append(10)
+            self.faces_textures_ids.append(11)
+            self.faces_textures_ids.append(5)
+
+        if self.type==9: # Fornalha
+            self.qtd_texturas = 3
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(12,'textures/furnace_top.png')
+            self.load_texture_from_file(13,'textures/furnace_side.png')
+            self.load_texture_from_file(14,'textures/furnace_front_off.png')
+            self.faces_textures_ids.append(12)
+            self.faces_textures_ids.append(13)
+            self.faces_textures_ids.append(14)
         
+        if self.type==10: #Folha
+            self.qtd_texturas = 1
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(9,'textures/leaves_oak.png')
+            for i in range(3):
+                self.faces_textures_ids.append(9)
+
+        if self.type==11: # Grama com carrinho reto
+            self.qtd_texturas = 3
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(0,'textures/dirt.png')
+            self.load_texture_from_file(1,'textures/grass_side.png')
+            self.load_texture_from_file(15,'textures/grass_top_cart.png')
+            self.faces_textures_ids.append(15)
+            self.faces_textures_ids.append(1)
+            self.faces_textures_ids.append(0)
+
+        if self.type==12: # Grama com carrinho reto
+            self.qtd_texturas = 3
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(0,'textures/dirt.png')
+            self.load_texture_from_file(1,'textures/grass_side.png')
+            self.load_texture_from_file(16,'textures/grass_top_cart2.png')
+            self.faces_textures_ids.append(16)
+            self.faces_textures_ids.append(1)
+            self.faces_textures_ids.append(0)

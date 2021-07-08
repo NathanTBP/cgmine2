@@ -50,8 +50,16 @@ class Mine:
 
         self.player = Player(self.altura_janela, self.largura_janela)
 
-        block= Block(0,0,0,4)
-        self.blocks.append(block)
+        for i in range(12):
+            block= Block(i+1,0,0,0,i+1)
+            self.blocks.append(block)
+            block= Block(i+2,0,2,90,i+1)
+            self.blocks.append(block)
+            block= Block(i+2,1,4,180,i+1)
+            self.blocks.append(block)
+            block= Block(i+1,1,6,270,i+1)
+            self.blocks.append(block)
+
 
         self.lastTime = time.time()
 
