@@ -7,6 +7,7 @@ import glm
 from Window import Window
 from Shader import Shader
 from Blocks import Block
+from Player import Player
 
 import math
 import time
@@ -17,9 +18,7 @@ class Mine:
     #Globais
     altura_janela = 900
     largura_janela  = 900
-    cameraPos   = glm.vec3(0.0,  0.0,  1.0)
-    cameraFront = glm.vec3(0.0,  0.0,  1.0)
-    cameraUp    = glm.vec3(0.0,  1.0,  0.0)
+
 
 
     #Ta copiado, não sei ainda
@@ -31,10 +30,12 @@ class Mine:
 
     
     #Inputs (game controller)
-    inpTx = 0 # Translação em X
-    inpTy = 0 # Translação em Y
-    inpTz = 0 # Pulo
-    polygonal_mode = True #Malha poligonal
+    lateralInt = 0  # Translação em X
+    forwardInt = 0  # Translação em Y
+    verticalInt = 0  # Pulo
+    polygonal_mode = True  # Malha poligonal
+
+    gameStep = 1/60
 
     def __init__(self):
         #Inicialização da Janela
@@ -50,9 +51,12 @@ class Mine:
         self.gameOver = False
         self.blocks = []
 
-        block= Block(1,1,1,3)
+        self.player = Player(self.altura_janela, self.largura_janela)
+
+        block= Block(0,0,0,3)
         self.blocks.append(block)
 
+        self.lastTime = time.time()
 
     def run(self):
         self.window.loop()
@@ -61,62 +65,60 @@ class Mine:
         #Para desenhar, limpa o buffer de cores e pega o programa
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1.0, 1.0, 1.0, 1.0)
-        programa=self.shader.getProgram()
+        program=self.shader.getProgram()
 
-        #verifica se deve usar o modo polygonal
-        if self.polygonal_mode==True:
+        now = time.time()
+
+        if (now-self.lastTime > self.gameStep):
+            self.physicsTick()
+            self.lastTime = now
+
+        # verifica se deve usar o modo polygonal
+        if self.polygonal_mode:
             glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
-        if self.polygonal_mode==False:
+        else:
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
 
-        #desenha o cenario
-        self.blocks[0].draw(programa)
+        self.player.draw(program)
 
-        #atualiza as matrizes view e projection
-        mat_view = self.view()
-        loc_view = glGetUniformLocation(programa, "view")
-        glUniformMatrix4fv(loc_view, 1, GL_FALSE, mat_view)
-
-        mat_projection = self.projection()
-        loc_projection = glGetUniformLocation(programa, "projection")
-        glUniformMatrix4fv(loc_projection, 1, GL_FALSE, mat_projection) 
-        
-
+        # desenha o cenario
+        for block in self.blocks:
+            block.draw(program)
        
 
     def onKeyEvent(self, window, key, scancode, action, mods):
-       
-        cameraSpeed = 0.5
+        if action == 2:
+            return
 
-        #Andar para frente (+Y)
-        if key == ord('W') and (action==1 or action==2):
-            self.cameraPos += cameraSpeed * self.cameraFront
+        mult = action*2-1
 
-        #Andar para frente (-Y)
-        if key == ord('S') and (action==1 or action==2):
-            self.cameraPos -= cameraSpeed * self.cameraFront
-        
-        #Andar para a direita
-        if key == ord('D') and (action==1 or action==2):
-            self.cameraPos += glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
-
-        #Andar para a esquerda
-        if key == ord('A') and (action==1 or action==2):
-            self.cameraPos -= glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
+        # cameraSpeed = 0.5
+        #
+        # #Andar para frente (+Y)
+        # if key == ord('W') and (action==1 or action==2):
+        #     self.cameraPos += cameraSpeed * self.cameraFront
+        #
+        # #Andar para frente (-Y)
+        # if key == ord('S') and (action==1 or action==2):
+        #     self.cameraPos -= cameraSpeed * self.cameraFront
+        #
+        # #Andar para a direita
+        # if key == ord('D') and (action==1 or action==2):
+        #     self.cameraPos += glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
+        #
+        # #Andar para a esquerda
+        # if key == ord('A') and (action==1 or action==2):
+        #     self.cameraPos -= glm.normalize(glm.cross(self.cameraFront, self.cameraUp)) * cameraSpeed
 
         #Pular
         #if key == ord(' ') and (action==1 or action==2):
             #vaiterqueterumafunção prapulo
 
-        #Ativar a visão poligonal
-        if key == ord('P') and (action==1) and self.polygonal_mode == False:
-            self.polygonal_mode = True
+        #Ativar e desativar a visão poligonal
+        if key == ord('P') and (action==1):
+            self.polygonal_mode = not self.polygonal_mode
 
-        #Desativar a visão poligonal
-        if key == ord('P') and (action==2) and self.polygonal_mode == True:
-           self.polygonal_mode = False   
-
-    def onCursorEvent(self,window, xpos, ypos):
+    def onCursorEvent(self, window, xpos, ypos):
 
         if self.firstMouse:
             self.lastX = xpos
@@ -142,21 +144,7 @@ class Mine:
         front.x = math.cos(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
         front.y = math.sin(glm.radians(self.pitch))
         front.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
-        self.cameraFront = glm.normalize(front)
+        # self.cameraFront = glm.normalize(front)
 
-    def view(self):
-
-        mat_view = glm.lookAt(self.cameraPos, self.cameraPos + self.cameraFront, self.cameraUp)
-        mat_view = np.array(mat_view)
-        return mat_view
-
-    def projection(self):
-
-        fov = glm.radians(45.0)
-        aspect = self.largura_janela/self.altura_janela
-        znear = 0.1
-        zfar = 10
-
-        mat_projection = glm.perspective(fov,aspect, znear, zfar)
-        mat_projection = np.array(mat_projection)    
-        return mat_projection
+    def physicsTick(self):
+        pass
