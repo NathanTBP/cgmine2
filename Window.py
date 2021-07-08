@@ -1,4 +1,6 @@
 import glfw
+from OpenGL.GL import *
+import OpenGL.GL.shaders
 
 class Window:
     def __init__ (self, width, height, title):
@@ -10,6 +12,7 @@ class Window:
         glfw.make_context_current(self.window)
         self.onDraw = None
         self.cursorLocked = False
+        glEnable(GL_DEPTH_TEST) ### importante para 3D
 
     def setKeyEvent (self, onKeyEvent):
         glfw.set_key_callback(self.window, onKeyEvent)

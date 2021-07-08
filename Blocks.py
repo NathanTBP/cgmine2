@@ -19,70 +19,32 @@ class Block:
         self.x=x
         self.y=y
         self.z=z
-
         self.type = typeofblock
-        cube_vertices_list = []
-        cube_faces_list = []
         vertices_list = []
         textures_coord_list = []
         self.faces_textures_ids = []
 
-        #Cria os 8 vértices do cubo
-        cube_vertices_list.append((0,0,0))
-        cube_vertices_list.append((0,0,1))
-        cube_vertices_list.append((0,1,0))
-        cube_vertices_list.append((0,1,1))
-        cube_vertices_list.append((1,0,0))
-        cube_vertices_list.append((1,0,1))
-        cube_vertices_list.append((1,1,0))
-        cube_vertices_list.append((1,1,1))
-
-        print(cube_vertices_list)
-
-        #Cria as faces do cubo (com 2 triangulos cada)
-
-        #top
-        cube_faces_list.append((1,7,3))
-        cube_faces_list.append((1,7,5))
-        #bottom
-        cube_faces_list.append((4,2,6))
-        cube_faces_list.append((4,2,0))
-        #front
-        cube_faces_list.append((5,6,7))
-        cube_faces_list.append((5,6,4))
-        #behind
-        cube_faces_list.append((3,1,0))
-        cube_faces_list.append((3,1,2))
-        #right
-        cube_faces_list.append((7,2,3))
-        cube_faces_list.append((7,2,6))
-        #left
-        cube_faces_list.append((1,4,5))
-        cube_faces_list.append((1,4,0))
-
-        print(cube_faces_list)
-
-        #Para cada face traingular do cubo (2 para cada face real)
-        for tri_face in cube_faces_list:
-            #Adiciona, da lista de vértices do cubo, os 3 vértices correspondentes a aquela face e suas texturas
-            vertices_list.append(cube_vertices_list[tri_face[0]])
-            vertices_list.append(cube_vertices_list[tri_face[1]])
-            vertices_list.append(cube_vertices_list[tri_face[2]])
-            textures_coord_list.append((1,0))
-            textures_coord_list.append((0,1))
-            textures_coord_list.append((0,0))
+        #Carrega o bloco da pasta de objetos
+        modelo = self.load_model_from_file('models/bloco.obj')
+        for face in modelo['faces']:
+            for vertice_id in face[0]:
+                vertices_list.append( modelo['vertices'][vertice_id-1])
+            for texture_id in face[1]:
+                textures_coord_list.append( modelo['texture'][texture_id-1])
 
         print(vertices_list)
         print(textures_coord_list)
 
-        #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
+        #carrega as texturas das 6 faces do tipo de bloco dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
         print(self.faces_textures_ids)
 
         #Cria os buffers para mostrar o bloco na tela 
 
-        total_vertices = len(vertices_list) #É um cubo, mas tem 36 vértices 
+        total_vertices = len(vertices_list) #É um cubo, mas tem 24 vértices (cada face compartilha o mesmo vértice com as duas vizinhas)
+        total_textures = len(textures_coord_list)
+        print(total_textures)
 
         #Aloca buffers
         self.buffer = glGenBuffers(2) 
@@ -92,7 +54,7 @@ class Block:
         self.vertices['position'] = np.array(vertices_list)
     
         #Prepara texturas
-        self.textures = np.zeros(len(textures_coord_list), [("position", np.float32, 2)]) # duas coordenadas de textura
+        self.textures = np.zeros(total_textures, [("position", np.float32, 2)]) # duas coordenadas de textura
         self.textures['position'] = textures_coord_list
 
         print(len(self.vertices))
@@ -130,11 +92,10 @@ class Block:
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
 
-        #glBindTexture(GL_TEXTURE_2D, 3)
-        #glDrawArrays(GL_TRIANGLES,0,36)
-        
+        glEnable(GL_TEXTURE_2D)
+
         #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
-        for face in range(12):
+        for face in range(6):
             #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
             v_face=face*6
             glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face])
@@ -168,10 +129,64 @@ class Block:
 
         #bloco de madeira processada de carvalho, 6 faces iguais com a textura de id 3
         if self.type==1:
-            self.load_texture_from_file(1,'text/dirt.png')
+            self.load_texture_from_file(1,'dirt.png')
         if self.type==3:
-            self.load_texture_from_file(3,'text/planks_oak.png')
-            # self.load_texture_from_file(1,'text/dirt.png')
-            for i in range(12):
-                self.faces_textures_ids.append(3)
+            self.qtd_texturas = 10
+            glEnable(GL_TEXTURE_2D)
+            texturas = glGenTextures(self.qtd_texturas)
+            self.load_texture_from_file(1,'textures/dirt.png')
+            self.load_texture_from_file(2,'textures/sand.png')
+            self.load_texture_from_file(3,'textures/planks_oak.png')
+            self.load_texture_from_file(4,'textures/planks_birch.png')
+            self.load_texture_from_file(5,'textures/log_oak.png')
+            self.load_texture_from_file(6,'textures/log_oak_top.png')
+            for i in range(6):
+                self.faces_textures_ids.append(i+1)
+        
+    def load_model_from_file(self,filename):
+        """Loads a Wavefront OBJ file. """
+        objects = {}
+        vertices = []
+        texture_coords = []
+        faces = []
 
+        material = None
+
+        # abre o arquivo obj para leitura
+        for line in open(filename, "r"): ## para cada linha do arquivo .obj
+            if line.startswith('#'): continue ## ignora comentarios
+            values = line.split() # quebra a linha por espaço
+            if not values: continue
+
+
+            ### recuperando vertices
+            if values[0] == 'v':
+                vertices.append(values[1:4])
+
+
+            ### recuperando coordenadas de textura
+            elif values[0] == 'vt':
+                texture_coords.append(values[1:3])
+
+            ### recuperando faces 
+            elif values[0] in ('usemtl', 'usemat'):
+                material = values[1]
+            elif values[0] == 'f':
+                face = []
+                face_texture = []
+                for v in values[1:]:
+                    w = v.split('/')
+                    face.append(int(w[0]))
+                    if len(w) >= 2 and len(w[1]) > 0:
+                        face_texture.append(int(w[1]))
+                    else:
+                        face_texture.append(0)
+
+                faces.append((face, face_texture, material))
+
+        model = {}
+        model['vertices'] = vertices
+        model['texture'] = texture_coords
+        model['faces'] = faces
+
+        return model
