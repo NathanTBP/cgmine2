@@ -8,9 +8,9 @@ from PIL import Image
 
 # Lista de blocos e seus códigos (tipo do bloco,range de id de texturas):
 # Grama 1 1
-# Areia 2 1
+# Areia 2 2
 # Madeira processada de Carvalho 3 3
-# Tronco de Carvalho 4 2
+# Tronco de Carvalho 4 4-5
 
 class Block:
 
@@ -19,66 +19,23 @@ class Block:
         self.x=x
         self.y=y
         self.z=z
-
         self.type = typeofblock
-        cube_vertices_list = []
-        cube_faces_list = []
         vertices_list = []
         textures_coord_list = []
         self.faces_textures_ids = []
 
-        #Cria os 8 vértices do cubo
-        cube_vertices_list.append((0,0,0))
-        cube_vertices_list.append((0,0,1))
-        cube_vertices_list.append((0,1,0))
-        cube_vertices_list.append((0,1,1))
-        cube_vertices_list.append((1,0,0))
-        cube_vertices_list.append((1,0,1))
-        cube_vertices_list.append((1,1,0))
-        cube_vertices_list.append((1,1,1))
-
-        print(cube_vertices_list)
-
-        #Cria as faces do cubo (inferior esquerdo, inferior direito, superior direito) (inferior esquerdo,superior direito,superior esquerdo)
-
-        #top DHG DGC v
-        cube_faces_list.append((3,7,6,3,6,2)) 
-        #bottom AEF AFB v
-        cube_faces_list.append((0,4,5,0,5,1)) 
-        #front BFH BHD v
-        cube_faces_list.append((1,5,7,1,7,3)) 
-        #behind EAC ECG v
-        cube_faces_list.append((4,0,2,4,2,6)) 
-        #right FEG FGH 
-        cube_faces_list.append((5,4,6,5,6,7)) 
-        #left ABD ADC
-        cube_faces_list.append((0,1,3,0,3,2))  
-
-        print(cube_faces_list)
-
-        #Para cada face do cubo 
-        for face in cube_faces_list:
-            #Adiciona, da lista de vértices do cubo, os 3 vértices correspondentes a aquela face e suas texturas (correspondem exatamente as pontas da textura)
-            vertices_list.append(cube_vertices_list[face[0]])
-            textures_coord_list.append((0,0)) #inf esquerdo
-            vertices_list.append(cube_vertices_list[face[1]])
-            textures_coord_list.append((0,1)) #inf direito
-            vertices_list.append(cube_vertices_list[face[2]])
-            textures_coord_list.append((1,1)) #sup direito
-
-            vertices_list.append(cube_vertices_list[face[3]])
-            textures_coord_list.append((0,0)) #inf esquerdo
-            vertices_list.append(cube_vertices_list[face[4]])
-            textures_coord_list.append((1,1)) #sup direito
-            vertices_list.append(cube_vertices_list[face[5]])
-            textures_coord_list.append((1,0)) #sup esquerdo
-            
-            
+        #Carrega o bloco da pasta de objetos
+        modelo = self.load_model_from_file('models/bloco.obj')
+        for face in modelo['faces']:
+            for vertice_id in face[0]:
+                vertices_list.append( modelo['vertices'][vertice_id-1])
+            for texture_id in face[1]:
+                textures_coord_list.append( modelo['texture'][texture_id-1])
 
         print(vertices_list)
         print(textures_coord_list)
 
-        #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
+        #carrega as texturas das 6 faces do tipo de bloco dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
         print(self.faces_textures_ids)
@@ -134,7 +91,9 @@ class Block:
         mat_model = self.model()
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
-      
+
+        glEnable(GL_TEXTURE_2D)
+
         #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
         for face in range(6):
             #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
@@ -147,10 +106,8 @@ class Block:
         matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
 
         # aplicando translacao
-        matrix_transform = glm.translate(matrix_transform, glm.vec3(self.x, self.y, self.z))
-
-        matrix_transform = glm.rotate(matrix_transform, math.radians(90), glm.vec3(0, 0, 1))
-
+        matrix_transform = glm.translate(matrix_transform, glm.vec3(self.x, self.y, self.z))    
+        
         matrix_transform = np.array(matrix_transform).T # pegando a transposta da matriz (glm trabalha com ela invertida)
         
         return matrix_transform
@@ -184,16 +141,52 @@ class Block:
             self.load_texture_from_file(5,'textures/log_oak.png')
             self.load_texture_from_file(6,'textures/log_oak_top.png')
             for i in range(6):
-                self.faces_textures_ids.append(5)
-
-        if self.type==4:
-            self.qtd_texturas = 10
-            glEnable(GL_TEXTURE_2D)
-            texturas = glGenTextures(self.qtd_texturas)
-            self.load_texture_from_file(5,'textures/log_oak.png')
-            self.load_texture_from_file(6,'textures/log_oak_top.png')
-            for i in range(2):
-                self.faces_textures_ids.append(6)
-            for i in range(4):
-                self.faces_textures_ids.append(5)
+                self.faces_textures_ids.append(i+1)
         
+    def load_model_from_file(self,filename):
+        """Loads a Wavefront OBJ file. """
+        objects = {}
+        vertices = []
+        texture_coords = []
+        faces = []
+
+        material = None
+
+        # abre o arquivo obj para leitura
+        for line in open(filename, "r"): ## para cada linha do arquivo .obj
+            if line.startswith('#'): continue ## ignora comentarios
+            values = line.split() # quebra a linha por espaço
+            if not values: continue
+
+
+            ### recuperando vertices
+            if values[0] == 'v':
+                vertices.append(values[1:4])
+
+
+            ### recuperando coordenadas de textura
+            elif values[0] == 'vt':
+                texture_coords.append(values[1:3])
+
+            ### recuperando faces 
+            elif values[0] in ('usemtl', 'usemat'):
+                material = values[1]
+            elif values[0] == 'f':
+                face = []
+                face_texture = []
+                for v in values[1:]:
+                    w = v.split('/')
+                    face.append(int(w[0]))
+                    if len(w) >= 2 and len(w[1]) > 0:
+                        face_texture.append(int(w[1]))
+                    else:
+                        face_texture.append(0)
+
+                faces.append((face, face_texture, material))
+
+        model = {}
+        model['vertices'] = vertices
+        model['texture'] = texture_coords
+        model['faces'] = faces
+
+        return model
