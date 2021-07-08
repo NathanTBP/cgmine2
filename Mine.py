@@ -8,6 +8,8 @@ from Window import Window
 from Shader import Shader
 from Blocks import Block
 from Player import Player
+from MultiBlock import MultiBlock
+from House import House
 
 import math
 import time
@@ -32,8 +34,8 @@ class Mine:
 
     gameStep = 1/60
 
-    boxSize = 124  # x e z
-    heightSize = 255  # y
+    boxSize = 100  # x e z
+    heightSize = 60  # y
 
     def __init__(self):
         # Inicialização da Janela
@@ -49,13 +51,18 @@ class Mine:
 
         # Dados referentes ao jogo
         self.gameOver = False
-        self.blocks = []
+        self.objects = []
+
+        multiblock = MultiBlock(4)
+        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 15, 15)
+        self.objects += multiblock.placeBlocks()
+
+        self.objects.append(House((3, 1, 3), 6, 7, 3))
 
         self.player = Player(self.altura_janela, self.largura_janela)
         self.player.setLimit(self.boxSize, self.heightSize)
 
-        block= Block(0,0,0,4)
-        self.blocks.append(block)
+        print(len(self.objects))
 
         self.lastTime = time.time()
 
@@ -85,8 +92,7 @@ class Mine:
 
         self.player.draw(program)
 
-        # desenha o cenario
-        for block in self.blocks:
+        for block in self.objects:
             block.draw(program)
        
 
@@ -144,6 +150,6 @@ class Mine:
         self.scrollXOffset = 0.0
         self.scrollYOffset = 0.0
 
-
+        # program = self.shader.getProgram()
 
 

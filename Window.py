@@ -13,6 +13,8 @@ class Window:
         self.onDraw = None
         self.cursorLocked = False
         glEnable(GL_DEPTH_TEST) ### importante para 3D
+        # glEnable(GL_CULL_FACE)
+        # glCullFace(GL_FRONT)
 
     def setKeyEvent (self, onKeyEvent):
         glfw.set_key_callback(self.window, onKeyEvent)
@@ -39,6 +41,7 @@ class Window:
         glfw.show_window(self.window)
         
         while not glfw.window_should_close(self.window):
+            # glFlush()
             glfw.poll_events()
 
             if (self.onDraw is not None):

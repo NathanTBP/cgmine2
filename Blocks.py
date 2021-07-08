@@ -14,13 +14,16 @@ from PIL import Image
 
 class Block:
 
-    def __init__ (self,x,y,z,typeofblock):
+    def __init__ (self, x, y, z, typeofblock, isFixed=True):
 
         self.x=x
         self.y=y
         self.z=z
 
         self.type = typeofblock
+        self.isFixed = isFixed
+        self.wasSent = False
+
         cube_vertices_list = []
         cube_faces_list = []
         vertices_list = []
@@ -28,16 +31,16 @@ class Block:
         self.faces_textures_ids = []
 
         #Cria os 8 vértices do cubo
-        cube_vertices_list.append((0,0,0))
-        cube_vertices_list.append((0,0,1))
-        cube_vertices_list.append((0,1,0))
-        cube_vertices_list.append((0,1,1))
-        cube_vertices_list.append((1,0,0))
-        cube_vertices_list.append((1,0,1))
-        cube_vertices_list.append((1,1,0))
-        cube_vertices_list.append((1,1,1))
+        cube_vertices_list.append((0+x, 0+y, 0+z))
+        cube_vertices_list.append((0+x, 0+y, 1+z))
+        cube_vertices_list.append((0+x, 1+y, 0+z))
+        cube_vertices_list.append((0+x, 1+y, 1+z))
+        cube_vertices_list.append((1+x, 0+y, 0+z))
+        cube_vertices_list.append((1+x, 0+y, 1+z))
+        cube_vertices_list.append((1+x, 1+y, 0+z))
+        cube_vertices_list.append((1+x, 1+y, 1+z))
 
-        print(cube_vertices_list)
+        # print(cube_vertices_list)
 
         #Cria as faces do cubo (inferior esquerdo, inferior direito, superior direito) (inferior esquerdo,superior direito,superior esquerdo)
 
@@ -54,7 +57,7 @@ class Block:
         #left ABD ADC
         cube_faces_list.append((0,1,3,0,3,2))  
 
-        print(cube_faces_list)
+        # print(cube_faces_list)
 
         #Para cada face do cubo 
         for face in cube_faces_list:
@@ -75,19 +78,19 @@ class Block:
             
             
 
-        print(vertices_list)
-        print(textures_coord_list)
+        # print(vertices_list)
+        # print(textures_coord_list)
 
         #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
-        print(self.faces_textures_ids)
+        # print(self.faces_textures_ids)
 
         #Cria os buffers para mostrar o bloco na tela 
 
         total_vertices = len(vertices_list) #É um cubo, mas tem 24 vértices (cada face compartilha o mesmo vértice com as duas vizinhas)
         total_textures = len(textures_coord_list)
-        print(total_textures)
+        # print(total_textures)
 
         #Aloca buffers
         self.buffer = glGenBuffers(2) 
@@ -100,7 +103,7 @@ class Block:
         self.textures = np.zeros(total_textures, [("position", np.float32, 2)]) # duas coordenadas de textura
         self.textures['position'] = textures_coord_list
 
-        print(len(self.vertices))
+        # print(len(self.vertices))
 
         #Binda vertices
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[0])
@@ -114,7 +117,7 @@ class Block:
 
     def draw(self, program):
 
-        #Mudar os valores de vértices da posição no GLSL (bind)
+        # Mudar os valores de vértices da posição no GLSL (bind)
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[0])
         stride = (self.vertices).strides[0]
         offset = ctypes.c_void_p(0)
@@ -122,7 +125,7 @@ class Block:
         glEnableVertexAttribArray(loc_vertices)
         glVertexAttribPointer(loc_vertices, 3, GL_FLOAT, False, stride, offset)
 
-        #Mudar os valores de texturas no GLSL (bind)
+        # Mudar os valores de texturas no GLSL (bind)
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[1])
         stride = (self.textures).strides[0]
         offset = ctypes.c_void_p(0)
@@ -130,28 +133,33 @@ class Block:
         glEnableVertexAttribArray(loc_texture_coord)
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
-        #Atribui a posição usando a matriz model
-        mat_model = self.model()
+
+        # Atribui a posição usando a matriz model
+        if self.isFixed == False:
+            mat_model = self.model()
+        else:
+            mat_model = np.array(glm.mat4(1.0)).T
+
         loc_model = glGetUniformLocation(program, "model")
-        glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)      
+        glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)
       
-        #Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
+        # Para cada face do cubo (cima,baixo,frente,tras,direita,esquerda)
         for face in range(6):
-            #Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
+            # Define vértice inicial (2 triangulos por face = 6 vertices), binda a textura referente a face e desenha a face
             v_face=face*6
             glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face])
-            glDrawArrays(GL_TRIANGLES,v_face,v_face+6)
+            glDrawArrays(GL_TRIANGLES, v_face, v_face+6)
 
     def model(self):
     
-        matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
+        matrix_transform = glm.mat4(1.0)  # instanciando uma matriz identidade
 
         # aplicando translacao
         matrix_transform = glm.translate(matrix_transform, glm.vec3(self.x, self.y, self.z))
 
         matrix_transform = glm.rotate(matrix_transform, math.radians(90), glm.vec3(0, 0, 1))
 
-        matrix_transform = np.array(matrix_transform).T # pegando a transposta da matriz (glm trabalha com ela invertida)
+        matrix_transform = np.array(matrix_transform).T  # pegando a transposta da matriz (glm trabalha com ela invertida)
         
         return matrix_transform
 
@@ -196,4 +204,3 @@ class Block:
                 self.faces_textures_ids.append(6)
             for i in range(4):
                 self.faces_textures_ids.append(5)
-        

@@ -6,8 +6,8 @@ import math
 import glm
 
 class Player:
-    cameraPos = glm.vec3(10.0, 10.0, 10.0)
-    cameraFront = glm.vec3(-10.0, -10.0, -10.0)
+    cameraPos = glm.vec3(15.0, 3, 15.0)
+    cameraFront = glm.vec3(-1.0, 0.0, -1.0)
     cameraUp = glm.vec3(0.0, 1.0, 0.0)
     cameraSpeed = 0.3
 
@@ -24,7 +24,7 @@ class Player:
 
         self.boxHeight = 0
         self.boxSize = 0
-        self.heightSize = 4
+        self.heightSize = 3
 
         pass
 
@@ -37,14 +37,14 @@ class Player:
         fov = glm.radians(self.fov)
         aspect = self.largura / self.altura
         znear = 0.1
-        zfar = 1000
+        zfar = 50
 
         mat_projection = glm.perspective(fov, aspect, znear, zfar)
         mat_projection = np.array(mat_projection)
         return mat_projection
 
     def draw(self, program):
-        print(self.cameraPos)
+        # print(self.cameraPos)
         mat_view = self.getView()
         loc_view = glGetUniformLocation(program, "view")
         glUniformMatrix4fv(loc_view, 1, GL_FALSE, mat_view)
