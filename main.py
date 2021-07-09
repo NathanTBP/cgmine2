@@ -4,6 +4,7 @@
 
 from Mine import Mine
 
+# Apenas inicia o programa e o laço principal da janela.
 def main():
     t = Mine()
     t.run()
