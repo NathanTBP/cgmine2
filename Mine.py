@@ -17,6 +17,7 @@ import math
 import time
 import random
 
+#Classe responsável
 
 class Mine:
     # Globais
@@ -55,10 +56,13 @@ class Mine:
         self.objects = []
         self.animatedObjects = []
 
+        #Criacão do cenário estático 
         self.generateGround()
         self.objects.append(House((3, 1, 3), 6, 7, 3))
         self.objects.append(Tree((12, 1, 12), 3))
         self.objects.append(Block(11, 1, 2, 0, 8))
+
+        #Criação do cenário dinâmico, jogador e céu 
 
         self.animatedObjects.append(Leaf((11, 4, 11)))
         self.animatedObjects.append(Leaf((14, 4, 13)))
@@ -69,13 +73,12 @@ class Mine:
         sky = Block(0, 0, 15, 0, 13)
         self.objects.append(sky)
 
-        print(len(self.objects))
-
         self.lastTime = time.time()
 
         self.mouseX = self.largura_janela / 2
         self.mouseY = self.altura_janela / 2
 
+    #Loop principal da janela 3D
     def run(self):
         self.window.loop()
 
@@ -84,6 +87,8 @@ class Mine:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1.0, 1.0, 1.0, 1.0)
         program = self.shader.getProgram()
+
+        #Atualiza k tempo
 
         now = time.time()
 
@@ -97,6 +102,8 @@ class Mine:
         else:
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
+        #Desenha os objetos
+
         self.player.draw(program)
 
         for block in self.objects:
@@ -104,6 +111,8 @@ class Mine:
 
         for animated in self.animatedObjects:
             animated.draw(program)
+
+    #Funçoes para capturar eventos de mouse e teclado como inputs
 
     def onKeyEvent(self, window, key, scancode, action, mods):
         if action == 2:
@@ -164,6 +173,7 @@ class Mine:
 
         # program = self.shader.getProgram()
 
+    #Funcao para gerar ls blocos de chão 
     def generateGround(self):
         multiblock = MultiBlock(2)
         multiblock.generatePlane((10, 0, 6), (1, 0, 0), (0, 0, 1), 2, 8)
