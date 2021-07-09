@@ -26,6 +26,11 @@ class Block:
 
     def __init__ (self, x, y, z, rot, typeofblock, isFixed=True):
 
+#Inicializa a classe bloco atribuindo os dados do criador a ele
+#x,y,z e rotação para a matriz model e typeofblock para selecionar a textura (lista acima)
+#isFixed e wasSent são controles para melhorar a perfomance de renderização 
+#buffers e texturas tambem são locais de cada bloco
+
         self.x=x
         self.y=y
         self.z=z
@@ -34,6 +39,7 @@ class Block:
         self.isFixed = isFixed
         self.wasSent = False
 
+        #Listas de controle de coordenadas do bloco
         cube_vertices_list = []
         cube_faces_list = []
         vertices_list = []
@@ -52,15 +58,14 @@ class Block:
         cube_vertices_list.append((1, 1, 0))
         cube_vertices_list.append((1, 1, 1))
 
-        # print(cube_vertices_list)
-
         #Cria as faces do cubo (inferior esquerdo, inferior direito, superior direito) (inferior esquerdo,superior direito,superior esquerdo)
 
-        #top DHG DGC v
+        #faces sempre de mesma orientação para aplicação de texturas.
+        #top DHG DGC
         cube_faces_list.append((3,7,6,3,6,2))
-        #front BFH BHD v
+        #front BFH BHD
         cube_faces_list.append((1,5,7,1,7,3)) 
-        #behind EAC ECG v
+        #behind EAC ECG
         cube_faces_list.append((4,0,2,4,2,6)) 
         #right FEG FGH 
         cube_faces_list.append((5,4,6,5,6,7)) 
@@ -68,8 +73,6 @@ class Block:
         cube_faces_list.append((0,1,3,0,3,2))
         #bottom AEF AFB v
         cube_faces_list.append((0,4,5,0,5,1))   
-
-        # print(cube_faces_list)
 
         #Para cada face do cubo 
         for face in cube_faces_list:
@@ -91,7 +94,6 @@ class Block:
         #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
-
         #Cria os buffers para mostrar o bloco na tela 
 
         total_vertices = len(vertices_list) #É um cubo, mas tem 24 vértices (cada face compartilha o mesmo vértice com as duas vizinhas)
@@ -109,8 +111,6 @@ class Block:
         self.textures = np.zeros(total_textures, [("position", np.float32, 2)]) # duas coordenadas de textura
         self.textures['position'] = textures_coord_list
 
-        # print(len(self.vertices))
-
         #Binda vertices
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[0])
         glBufferData(GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_DYNAMIC_DRAW)
@@ -123,7 +123,9 @@ class Block:
 
     def draw(self, program):
 
-        # Mudar os valores de vértices da posição no GLSL (bind)
+        #Para cada chamada de desenho do objeto
+
+        # Mudar os valores de vértices da posição no GLSL (bind com o buffer local)
         glBindBuffer(GL_ARRAY_BUFFER, self.buffer[0])
         stride = (self.vertices).strides[0]
         offset = ctypes.c_void_p(0)
@@ -139,17 +141,15 @@ class Block:
         glEnableVertexAttribArray(loc_texture_coord)
         glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)
 
-
         # Atribui a posição usando a matriz model
-        # if self.isFixed == False:
+        
         mat_model = self.model()
-        # else:
-        #     mat_model = np.array(glm.mat4(1.0)).T
 
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)    
 
-
+        #Pega a textura do id, e desenha cada parte do cubo
+         
         glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[0]) #Topo
         glMultiDrawArrays(GL_TRIANGLES,0,6,6)  
 
@@ -170,6 +170,8 @@ class Block:
         # aplicando rotação em z
         matrix_transform = glm.rotate(matrix_transform, math.radians(self.rot), glm.vec3(0, 0, 1))
 
+       #caracteristicas para o céu 
+
         if self.type == 13:
             matrix_transform = glm.translate(matrix_transform, glm.vec3(0, 0, -15))
             matrix_transform = glm.scale(matrix_transform, glm.vec3(15, 15, 15))
@@ -179,6 +181,8 @@ class Block:
         return matrix_transform
 
     def load_texture_from_file(self, texture_id, img_textura):
+
+        #binda a textura de um arquivo em um id (a partir de uma imagem)
 
         glBindTexture(GL_TEXTURE_2D, texture_id)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -209,7 +213,7 @@ class Block:
 # Grama com Carrinho torto 12 3
 
         glEnable(GL_TEXTURE_2D) # Liga a textura
-        self.load_texture_from_file(1,'textures/grass_side.png')
+        
         if self.type==1: # Grama
             self.qtd_texturas = 3
             texturas = glGenTextures(self.qtd_texturas)
@@ -323,6 +327,7 @@ class Block:
             self.faces_textures_ids.append(19)
             self.isFixed = False
 
+#getter e setters de coordenadas
 
     def getCoord(self):
         return (self.x, self.y, self.z)
