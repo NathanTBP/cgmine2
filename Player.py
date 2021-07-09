@@ -6,6 +6,7 @@ import math
 import glm
 
 class Player:
+    # O player atua como a camera que se move pelo cenario e usa as matrizes de view e projection
     cameraPos = glm.vec3(7.0, 0, 7.0)
     cameraFront = glm.vec3(1.0, 0.0, 0.0)
     cameraUp = glm.vec3(0.0, 1.0, 0.0)
@@ -28,12 +29,13 @@ class Player:
         self.cameraPos[1] = self.heightSize
 
         pass
-
+    
+    #Matriz view
     def getView(self):
         mat_view = glm.lookAt(self.cameraPos, self.cameraPos + self.cameraFront, self.cameraUp)
         mat_view = np.array(mat_view)
         return mat_view
-
+    #Matriz Projection
     def getProjection(self):
         fov = glm.radians(self.fov)
         aspect = self.largura / self.altura
@@ -43,7 +45,7 @@ class Player:
         mat_projection = glm.perspective(fov, aspect, znear, zfar)
         mat_projection = np.array(mat_projection)
         return mat_projection
-
+    # Draw da visão 
     def draw(self, program):
         # print(self.cameraPos)
         mat_view = self.getView()
@@ -54,6 +56,7 @@ class Player:
         loc_projection = glGetUniformLocation(program, "projection")
         glUniformMatrix4fv(loc_projection, 1, GL_FALSE, mat_projection)
 
+    #Movimentação do Personagem (com diferentes intensidades)
     def movePlayer(self, forwardIntensity, lateralIntensity, verticalIntensity):
         forwardVector = glm.normalize(glm.vec3(self.cameraFront[0], 0.0, self.cameraFront[2]))
         lateralVector = glm.normalize(glm.cross(self.cameraFront, self.cameraUp) * glm.vec3(1.0, 0.0, 1.0))
@@ -66,6 +69,7 @@ class Player:
         self.cameraPos[2] = max(min(self.cameraPos[2], self.boxSize-0.5), 0.5)
         self.cameraPos[1] = max(min(self.cameraPos[1], self.boxHeight-0.5), 0+self.heightSize)
 
+    #Uso do mouse para controlar a angulação da camera
     def lookAround(self, xpos, ypos):
         if self.firstMouse:
             self.lastX = xpos
@@ -95,6 +99,7 @@ class Player:
         front.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
         self.cameraFront = glm.normalize(front)
 
+    #Uso do fov para dsr xoom
     def zoom(self, yoffset):
         self.fov -= yoffset
 
@@ -109,6 +114,7 @@ class Player:
     def getPlayerHeight(self):
         return self.heightSize
 
+    #Limitaçao do personagem baseado no tamabho do cenário 
     def setLimit(self, boxSize, heightSize):
         self.boxSize = boxSize
         self.boxHeight = heightSize
