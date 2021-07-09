@@ -15,14 +15,13 @@ import math
 import time
 import random
 
+
 class Mine:
-
-    #Globais
+    # Globais
     altura_janela = 900
-    largura_janela  = 900
+    largura_janela = 900
 
-    
-    #Inputs (game controller)
+    # Inputs (game controller)
     lateralInt = 0  # Translação em X
     forwardInt = 0  # Translação em Z
     verticalInt = 0  # Translação em Y
@@ -32,7 +31,7 @@ class Mine:
 
     polygonal_mode = False  # Malha poligonal
 
-    gameStep = 1/60
+    gameStep = 1 / 60
 
     boxSize = 100  # x e z
     heightSize = 60  # y
@@ -53,65 +52,50 @@ class Mine:
         self.gameOver = False
         self.objects = []
 
-        multiblock = MultiBlock(4)
-        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 15, 15)
-        self.objects += multiblock.placeBlocks()
-
+        self.generateGround()
         self.objects.append(House((3, 1, 3), 6, 7, 3))
 
         self.player = Player(self.altura_janela, self.largura_janela)
         self.player.setLimit(self.boxSize, self.heightSize)
 
-        for i in range(12):
-            block= Block(i+1,0,0,0,i+1)
-            self.objects.append(block)
-            block= Block(i+2,0,2,90,i+1)
-            self.objects.append(block)
-            block= Block(i+2,1,4,180,i+1)
-            self.objects.append(block)
-            block= Block(i+1,1,6,270,i+1)
-            self.objects.append(block)
-
         print(len(self.objects))
-
 
         self.lastTime = time.time()
 
-        self.mouseX = self.largura_janela/2
-        self.mouseY = self.altura_janela/2
+        self.mouseX = self.largura_janela / 2
+        self.mouseY = self.altura_janela / 2
 
     def run(self):
         self.window.loop()
 
     def onDraw(self):
-        #Para desenhar, limpa o buffer de cores e pega o programa
+        # Para desenhar, limpa o buffer de cores e pega o programa
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glClearColor(1.0, 1.0, 1.0, 1.0)
-        program=self.shader.getProgram()
+        program = self.shader.getProgram()
 
         now = time.time()
 
-        if (now-self.lastTime > self.gameStep):
+        if (now - self.lastTime > self.gameStep):
             self.physicsTick()
             self.lastTime = now
 
         # verifica se deve usar o modo polygonal
         if self.polygonal_mode:
-            glPolygonMode(GL_FRONT_AND_BACK,GL_LINE)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         else:
-            glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
         self.player.draw(program)
 
         for block in self.objects:
             block.draw(program)
-       
 
     def onKeyEvent(self, window, key, scancode, action, mods):
         if action == 2:
             return
 
-        mult = action*2-1
+        mult = action * 2 - 1
 
         # Andar para frente
         if key == glfw.KEY_W:
@@ -162,5 +146,18 @@ class Mine:
         self.scrollYOffset = 0.0
 
         # program = self.shader.getProgram()
+
+    def generateGround(self):
+        multiblock = MultiBlock(1)
+        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 10, 15)
+        self.objects += multiblock.placeBlocks()
+
+        multiblock = MultiBlock(2)
+        multiblock.generatePlane((10, 0, 0), (1, 0, 0), (0, 0, 1), 2, 15)
+        self.objects += multiblock.placeBlocks()
+
+        multiblock = MultiBlock(1)
+        multiblock.generatePlane((12, 0, 0), (1, 0, 0), (0, 0, 1), 3, 15)
+        self.objects += multiblock.placeBlocks()
 
 

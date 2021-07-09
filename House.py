@@ -38,10 +38,28 @@ class House:
         multiblock.generateLine((x, y+ySize-1, z + 1), (0, 0, 1), zSize - 1)
         self.blocks += multiblock.placeBlocks()
 
-        self.blocks.append(Block(x, y+1, z+1, 4))
-        self.blocks.append(Block(x, y+1, z+zSize-1, 4))
+        self.blocks.append(Block(x, y+1, z+1, 0, 4))
+        self.blocks.append(Block(x, y+1, z+zSize-1, 0, 4))
 
+        # Parede frente
+        multiblock = MultiBlock(4)
+        multiblock.generatePlane((x+xSize-1, y, z+1), (0, 1, 0), (0, 0, 1), ySize, 2)
+        multiblock.generatePlane((x+xSize-1, y, z+zSize-2), (0, 1, 0), (0, 0, 1), ySize, 2)
+        multiblock.generateLine((x+xSize-1, y+ySize-1, z+3), (0, 0, 1), 2)
+        self.blocks += multiblock.placeBlocks()
 
+        # Fornalha
+        self.blocks.append(Block(5, 1, 5, 90, 9))
+
+        # Crafting table
+        self.blocks.append(Block(7, 1, 5, 0, 8))
+
+        # Folha
+        self.blocks.append(Block(7, 3, 9, 0, 7))
+
+        # Tronco
+        self.blocks.append(Block(7, 1, 9, 0, 6))
+        self.blocks.append(Block(7, 2, 9, 0, 6))
 
 
     def draw(self, program):

@@ -6,10 +6,10 @@ import math
 import glm
 
 class Player:
-    cameraPos = glm.vec3(15.0, 3, 15.0)
+    cameraPos = glm.vec3(15.0, 0, 15.0)
     cameraFront = glm.vec3(-1.0, 0.0, -1.0)
     cameraUp = glm.vec3(0.0, 1.0, 0.0)
-    cameraSpeed = 0.3
+    cameraSpeed = 0.4
 
     def __init__(self, altura, largura):
         self.altura = altura
@@ -24,7 +24,8 @@ class Player:
 
         self.boxHeight = 0
         self.boxSize = 0
-        self.heightSize = 3
+        self.heightSize = 2.2
+        self.cameraPos[1] = self.heightSize
 
         pass
 

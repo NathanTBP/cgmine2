@@ -15,7 +15,7 @@ class MultiBlock:
     def generateLine(self, start, direction, length):
         x, y, z = start
         for i in range(length):
-            self.blocks.append(Block(x, y, z, self.type))
+            self.blocks.append(Block(x, y, z, 0, self.type))
             print(x, y, z)
 
             x += direction[0]
@@ -31,7 +31,7 @@ class MultiBlock:
             tmpZ = z
 
             for j in range(length2):
-                self.blocks.append(Block(tmpX, tmpY, tmpZ, self.type))
+                self.blocks.append(Block(tmpX, tmpY, tmpZ, 0, self.type))
 
                 tmpX += direction2[0]
                 tmpY += direction2[1]
@@ -43,9 +43,3 @@ class MultiBlock:
 
     def placeBlocks(self):
         return self.blocks
-
-
-
-
-
-

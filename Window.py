@@ -13,8 +13,8 @@ class Window:
         self.onDraw = None
         self.cursorLocked = False
         glEnable(GL_DEPTH_TEST) ### importante para 3D
-        # glEnable(GL_CULL_FACE)
-        # glCullFace(GL_FRONT)
+        glEnable(GL_CULL_FACE)
+        glCullFace(GL_BACK)
 
     def setKeyEvent (self, onKeyEvent):
         glfw.set_key_callback(self.window, onKeyEvent)

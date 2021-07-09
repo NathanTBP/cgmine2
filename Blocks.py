@@ -42,14 +42,14 @@ class Block:
         self.faces_textures_ids = []
 
         #Cria os 8 vértices do cubo
-        cube_vertices_list.append((0+x, 0+y, 0+z))
-        cube_vertices_list.append((0+x, 0+y, 1+z))
-        cube_vertices_list.append((0+x, 1+y, 0+z))
-        cube_vertices_list.append((0+x, 1+y, 1+z))
-        cube_vertices_list.append((1+x, 0+y, 0+z))
-        cube_vertices_list.append((1+x, 0+y, 1+z))
-        cube_vertices_list.append((1+x, 1+y, 0+z))
-        cube_vertices_list.append((1+x, 1+y, 1+z))
+        cube_vertices_list.append((0, 0, 0))
+        cube_vertices_list.append((0, 0, 1))
+        cube_vertices_list.append((0, 1, 0))
+        cube_vertices_list.append((0, 1, 1))
+        cube_vertices_list.append((1, 0, 0))
+        cube_vertices_list.append((1, 0, 1))
+        cube_vertices_list.append((1, 1, 0))
+        cube_vertices_list.append((1, 1, 1))
 
         # print(cube_vertices_list)
 
@@ -144,10 +144,10 @@ class Block:
 
 
         # Atribui a posição usando a matriz model
-        if self.isFixed == False:
-            mat_model = self.model()
-        else:
-            mat_model = np.array(glm.mat4(1.0)).T
+        # if self.isFixed == False:
+        mat_model = self.model()
+        # else:
+        #     mat_model = np.array(glm.mat4(1.0)).T
 
         loc_model = glGetUniformLocation(program, "model")
         glUniformMatrix4fv(loc_model, 1, GL_TRUE, mat_model)    
@@ -177,7 +177,7 @@ class Block:
         
         return matrix_transform
 
-    def load_texture_from_file(self,texture_id, img_textura):
+    def load_texture_from_file(self, texture_id, img_textura):
 
         glBindTexture(GL_TEXTURE_2D, texture_id)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
