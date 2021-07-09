@@ -12,6 +12,7 @@ class MultiBlock:
         self.blocks = []
         self.type = type
 
+    #Diferentes métodos  para auxiliar a criação de cenários (nomes autoexplicativos)
     def generateLine(self, start, direction, length):
         x, y, z = start
         for i in range(length):
