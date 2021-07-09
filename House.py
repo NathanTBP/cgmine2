@@ -7,6 +7,7 @@ from MultiBlock import MultiBlock
 
 
 class House:
+    #Diferentes laços de criação de classes blocos
     def __init__(self, start, xSize, zSize, ySize):
         self.blocks = []
         self.build(start, xSize, ySize, zSize)
