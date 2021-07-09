@@ -48,6 +48,12 @@ class House:
         multiblock.generateLine((x+xSize-1, y+ySize-1, z+3), (0, 0, 1), 2)
         self.blocks += multiblock.placeBlocks()
 
+        # Chao
+        multiblock = MultiBlock(5)
+        multiblock.generatePlane((x, y-1, z), (1, 0, 0), (0, 0, 1), xSize, zSize)
+        self.blocks += multiblock.placeBlocks()
+
+
         # Fornalha
         self.blocks.append(Block(5, 1, 5, 90, 9))
 

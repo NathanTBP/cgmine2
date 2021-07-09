@@ -6,8 +6,8 @@ import math
 import glm
 
 class Player:
-    cameraPos = glm.vec3(15.0, 0, 15.0)
-    cameraFront = glm.vec3(-1.0, 0.0, -1.0)
+    cameraPos = glm.vec3(7.0, 0, 7.0)
+    cameraFront = glm.vec3(1.0, 0.0, 0.0)
     cameraUp = glm.vec3(0.0, 1.0, 0.0)
     cameraSpeed = 0.4
 
@@ -24,7 +24,7 @@ class Player:
 
         self.boxHeight = 0
         self.boxSize = 0
-        self.heightSize = 2.2
+        self.heightSize = 2.5
         self.cameraPos[1] = self.heightSize
 
         pass
@@ -62,9 +62,9 @@ class Player:
         self.cameraPos += lateralVector * lateralIntensity * self.cameraSpeed
         self.cameraPos[1] += verticalIntensity * self.cameraSpeed
 
-        self.cameraPos[0] = max(min(self.cameraPos[0], self.boxSize), -self.boxSize)
-        self.cameraPos[2] = max(min(self.cameraPos[2], self.boxSize), -self.boxSize)
-        self.cameraPos[1] = max(min(self.cameraPos[1], self.boxHeight), 0+self.heightSize)
+        self.cameraPos[0] = max(min(self.cameraPos[0], self.boxSize-0.5), 0.5)
+        self.cameraPos[2] = max(min(self.cameraPos[2], self.boxSize-0.5), 0.5)
+        self.cameraPos[1] = max(min(self.cameraPos[1], self.boxHeight-0.5), 0+self.heightSize)
 
     def lookAround(self, xpos, ypos):
         if self.firstMouse:

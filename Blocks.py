@@ -172,7 +172,7 @@ class Block:
 
         if self.type == 13:
             matrix_transform = glm.translate(matrix_transform, glm.vec3(0, 0, -15))
-            matrix_transform = glm.scale(matrix_transform, glm.vec3(35, 35, 35))
+            matrix_transform = glm.scale(matrix_transform, glm.vec3(15, 15, 15))
 
         matrix_transform = np.array(matrix_transform).T  # pegando a transposta da matriz (glm trabalha com ela invertida)
         
@@ -322,3 +322,10 @@ class Block:
             self.faces_textures_ids.append(18)
             self.faces_textures_ids.append(19)
             self.isFixed = False
+
+
+    def getCoord(self):
+        return (self.x, self.y, self.z)
+
+    def setCoord(self, coord):
+        self.x, self.y, self.z = coord

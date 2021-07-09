@@ -10,6 +10,8 @@ from Blocks import Block
 from Player import Player
 from MultiBlock import MultiBlock
 from House import House
+from Tree import Tree
+from Leaf import Leaf
 
 import math
 import time
@@ -33,8 +35,8 @@ class Mine:
 
     gameStep = 1 / 60
 
-    boxSize = 100  # x e z
-    heightSize = 60  # y
+    boxSize = 15  # x e z
+    heightSize = 15  # y
 
     def __init__(self):
         # Inicialização da Janela
@@ -51,21 +53,20 @@ class Mine:
         # Dados referentes ao jogo
         self.gameOver = False
         self.objects = []
+        self.animatedObjects = []
 
         self.generateGround()
         self.objects.append(House((3, 1, 3), 6, 7, 3))
-   
+        self.objects.append(Tree((12, 1, 12), 3))
+        self.objects.append(Block(11, 1, 2, 0, 8))
 
-    #    multiblock = MultiBlock(4)
-    #    multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 15, 15)
-    #    self.objects += multiblock.placeBlocks()
-
-    #    self.objects.append(House((3, 1, 3), 6, 7, 3))
+        self.animatedObjects.append(Leaf((11, 4, 11)))
+        self.animatedObjects.append(Leaf((14, 4, 13)))
 
         self.player = Player(self.altura_janela, self.largura_janela)
         self.player.setLimit(self.boxSize, self.heightSize)
 
-        sky = Block(0,0,0,0,13)
+        sky = Block(0, 0, 15, 0, 13)
         self.objects.append(sky)
 
         print(len(self.objects))
@@ -100,6 +101,9 @@ class Mine:
 
         for block in self.objects:
             block.draw(program)
+
+        for animated in self.animatedObjects:
+            animated.draw(program)
 
     def onKeyEvent(self, window, key, scancode, action, mods):
         if action == 2:
@@ -155,19 +159,30 @@ class Mine:
         self.scrollXOffset = 0.0
         self.scrollYOffset = 0.0
 
+        for obj in self.animatedObjects:
+            obj.animate()
+
         # program = self.shader.getProgram()
 
     def generateGround(self):
-        multiblock = MultiBlock(1)
-        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 10, 15)
-        self.objects += multiblock.placeBlocks()
-
         multiblock = MultiBlock(2)
-        multiblock.generatePlane((10, 0, 0), (1, 0, 0), (0, 0, 1), 2, 15)
+        multiblock.generatePlane((10, 0, 6), (1, 0, 0), (0, 0, 1), 2, 8)
+        multiblock.generatePlane((9, 0, 6), (1, 0, 0), (0, 0, 1), 2, 2)
+        multiblock.generatePlane((0, 0, 12), (1, 0, 0), (0, 0, 1), 10, 2)
         self.objects += multiblock.placeBlocks()
 
         multiblock = MultiBlock(1)
         multiblock.generatePlane((12, 0, 0), (1, 0, 0), (0, 0, 1), 3, 15)
+        multiblock.generatePlane((0, 0, 0), (1, 0, 0), (0, 0, 1), 12, 3)
+        multiblock.generatePlane((9, 0, 3), (1, 0, 0), (0, 0, 1), 3, 3)
+        multiblock.generatePlane((0, 0, 3), (1, 0, 0), (0, 0, 1), 3, 8)
+        multiblock.generateLine((0, 0, 14), (1, 0, 0), 12)
+        multiblock.generateLine((0, 0, 11), (1, 0, 0), 10)
+        multiblock.generateLine((9, 0, 8), (0, 0, 1), 3)
         self.objects += multiblock.placeBlocks()
+
+        multiblock = MultiBlock(1)
+        self.objects += multiblock.placeBlocks()
+
 
 
