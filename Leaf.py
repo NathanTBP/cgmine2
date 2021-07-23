@@ -5,7 +5,6 @@ import glm
 from Blocks import Block
 from MultiBlock import MultiBlock
 
-
 class Leaf:
     def __init__(self, start):
         self.x, self.y, self.z = start

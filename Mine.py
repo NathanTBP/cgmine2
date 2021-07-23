@@ -12,6 +12,7 @@ from MultiBlock import MultiBlock
 from House import House
 from Tree import Tree
 from Leaf import Leaf
+from Sky import Sky
 
 import math
 import time
@@ -28,6 +29,7 @@ class Mine:
     lateralInt = 0  # Translação em X
     forwardInt = 0  # Translação em Z
     verticalInt = 0  # Translação em Y
+    currentLight = 0.5 # Iluminacao ambiente
 
     scrollXOffset = 0
     scrollYOffset = 0
@@ -64,14 +66,15 @@ class Mine:
 
         #Criação do cenário dinâmico, jogador e céu 
 
+        self.animatedObjects.append(Sky(19))
         self.animatedObjects.append(Leaf((11, 4, 11)))
         self.animatedObjects.append(Leaf((14, 4, 13)))
+
 
         self.player = Player(self.altura_janela, self.largura_janela)
         self.player.setLimit(self.boxSize, self.heightSize)
 
-        sky = Block(0, 0, 15, 0, 13)
-        self.objects.append(sky)
+        self.sunPos=self.animatedObjects[0].updateSunpos()
 
         self.lastTime = time.time()
 
@@ -102,6 +105,15 @@ class Mine:
         else:
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
+        # Atualiza a posicao da luz
+
+        loc_light_pos = glGetUniformLocation(program, "lightPos") # recuperando localizacao da variavel lightPos na GPU
+        glUniform3f(loc_light_pos, self.sunPos[0],self.sunPos[1],self.sunPos[2]) ### posicao da fonte de luz
+
+        loc_ia = glGetUniformLocation(program, "ia")
+        glUniform1f(loc_ia, self.currentLight)
+        #print(self.currentLight)
+
         #Desenha os objetos
 
         self.player.draw(program)
@@ -111,6 +123,7 @@ class Mine:
 
         for animated in self.animatedObjects:
             animated.draw(program)
+
 
     #Funçoes para capturar eventos de mouse e teclado como inputs
 
@@ -136,6 +149,14 @@ class Mine:
         if key == glfw.KEY_A:
             self.lateralInt -= mult
 
+        # Aumentar a intensidade da luz ambiente
+        if key == glfw.KEY_P:
+            self.currentLight += 0.1
+
+        # Diminuir a intensidade da luz ambiente
+        if key == glfw.KEY_U:
+            self.currentLight -= 0.1
+
         # Subir
         if key == glfw.KEY_SPACE:
             self.verticalInt += mult
@@ -145,7 +166,7 @@ class Mine:
             self.verticalInt -= mult
 
         # Ativar e desativar a visão poligonal
-        if key == glfw.KEY_P and action == 1:
+        if key == glfw.KEY_O and action == 1:
             self.polygonal_mode = not self.polygonal_mode
 
         if key == glfw.KEY_ESCAPE and action == 1:
@@ -165,11 +186,15 @@ class Mine:
         self.player.lookAround(self.mouseX, self.mouseY)
         self.player.zoom(self.scrollYOffset)
 
+        #print(self.sunPos)
+
         self.scrollXOffset = 0.0
         self.scrollYOffset = 0.0
 
         for obj in self.animatedObjects:
             obj.animate()
+
+        self.sunPos=self.animatedObjects[0].updateSunpos()
 
         # program = self.shader.getProgram()
 

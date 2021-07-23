@@ -17,7 +17,7 @@ class MultiBlock:
         x, y, z = start
         for i in range(length):
             self.blocks.append(Block(x, y, z, 0, self.type))
-            print(x, y, z)
+            #print(x, y, z)
 
             x += direction[0]
             y += direction[1]
