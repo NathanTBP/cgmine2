@@ -126,4 +126,12 @@ class Sky:
 
         return (x,y,7)
 
+    def updateLight(self):
+
+        hour=math.floor(self.block.getHr())  
+
+        if(hour>=7 and hour<=18):
+            return 1.8
         
+        else:
+            return 0.8

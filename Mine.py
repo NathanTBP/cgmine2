@@ -62,7 +62,7 @@ class Mine:
         self.generateGround()
         self.objects.append(House((3, 1, 3), 6, 7, 3))
         self.objects.append(Tree((12, 1, 12), 3))
-        self.objects.append(Block(11, 1, 2, 0, 8))
+        self.objects.append(Block(12, 1, 7, 0, 11))
 
         #Criação do cenário dinâmico, jogador e céu 
 
@@ -75,6 +75,9 @@ class Mine:
         self.player.setLimit(self.boxSize, self.heightSize)
 
         self.sunPos=self.animatedObjects[0].updateSunpos()
+        self.playerPos=self.player.getPlayerPos()
+        self.light=self.animatedObjects[0].updateLight()
+
 
         self.lastTime = time.time()
 
@@ -112,7 +115,14 @@ class Mine:
 
         loc_ia = glGetUniformLocation(program, "ia")
         glUniform1f(loc_ia, self.currentLight)
-        #print(self.currentLight)
+
+        loc_id = glGetUniformLocation(program, "id")
+        glUniform1f(loc_id, self.light)
+
+        loc_viewPos = glGetUniformLocation(program, "viewPos")
+        glUniform3f(loc_viewPos, self.playerPos[0],self.playerPos[1],self.playerPos[2])
+
+        #print(self.playerPos)
 
         #Desenha os objetos
 
@@ -195,6 +205,8 @@ class Mine:
             obj.animate()
 
         self.sunPos=self.animatedObjects[0].updateSunpos()
+        self.light=self.animatedObjects[0].updateLight()
+        self.playerPos=self.player.getPlayerPos()
 
         # program = self.shader.getProgram()
 

@@ -65,12 +65,11 @@ class Block:
 
         #Cria as 6 normais do cubo
         cube_normals_list.append((0, 1, 0)) #Cima
-        cube_normals_list.append((1, 0, 0)) #Frente
-        cube_normals_list.append((-1, 0, 0)) #Atras
-        cube_normals_list.append((0, 0, 1)) #Direita
-        cube_normals_list.append((0, 0, -1)) #Esquerda
+        cube_normals_list.append((0, 0, 1)) #Frente
+        cube_normals_list.append((0, 0, -1)) #Atras
+        cube_normals_list.append((-1, 0, 0)) #Direita
+        cube_normals_list.append((1, 0, 0)) #Esquerda
         cube_normals_list.append((0, -1, 0)) #Baixo
-
 
         #Cria as faces do cubo (inferior esquerdo, inferior direito, superior direito) (inferior esquerdo,superior direito,superior esquerdo)
         #faces sempre de mesma orientação para aplicação de texturas.
@@ -112,6 +111,24 @@ class Block:
             for j in range(6):
                 normals_list.append(cube_normals_list[i])
 
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[0])
+
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[3])
+
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[4])
+
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[2])
+
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[1])
+
+        # for i in range(6):
+        #         normals_list.append(cube_normals_list[5])                          
+
         #carrega as texturas das 6 faces dos arquivos .png e atribui aos ids de cada face
         self.load_textures()
 
@@ -120,7 +137,6 @@ class Block:
         total_vertices = len(vertices_list) #É um cubo, mas tem 36 vértices (cada face compartilha o mesmo vértice com as tres vizinhas) (todos aqui dao 36)
         total_textures = len(textures_coord_list)
         total_normals = len(normals_list)
-        # print(total_textures)
 
         #Aloca buffers
         self.buffer = glGenBuffers(3) #um buffer para vertices, um para texturas e um para iluminacao
@@ -202,8 +218,8 @@ class Block:
         #Pega a textura do id, e desenha cada parte do cubo
 
         for face in range(6):
-            if self.type==13:  
-                self.update_textures()
+            if self.type==13:  # Se for o ceu
+                self.update_textures() #Atualiza conforme a hora
             glBindTexture(GL_TEXTURE_2D, self.faces_textures_ids[face]) #Linka a textura da face
             glDrawArrays(GL_TRIANGLES,face*6,6)  #Desenha a face
 
@@ -265,10 +281,11 @@ class Block:
         self.ka = 0.5
         self.kd = 0
         self.ks = 0
-        self.ns = 1
+        self.ns = 32
         
         if self.type==1: # Grama
             self.kd = 0.25
+            self.ks = 0.2
             self.qtd_texturas = 3
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(0,'textures/dirt.png')
@@ -282,6 +299,8 @@ class Block:
 
         if self.type==2: #Areia 
             self.kd = 0.4
+            self.ks = 0.35
+            self.ns = 8
             self.qtd_texturas = 1
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(3,'textures/sand.png')
@@ -297,7 +316,7 @@ class Block:
                 self.faces_textures_ids.append(4)  
 
         if self.type==4: # Carvalho
-            self.kd = 0.15
+            self.kd = 0.6
             self.qtd_texturas = 1
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(5,'textures/planks_oak.png')
@@ -345,6 +364,8 @@ class Block:
 
         if self.type==9: # Fornalha
             self.kd = 0.6
+            self.ks = 9
+            self.ns = 128
             self.qtd_texturas = 3
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(12,'textures/furnace_top.png')
@@ -366,6 +387,8 @@ class Block:
 
         if self.type==11: # Grama com carrinho reto
             self.kd = 0.25
+            self.ks = 1.5
+            self.ns= 64
             self.qtd_texturas = 3
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(0,'textures/dirt.png')
@@ -389,7 +412,8 @@ class Block:
             self.faces_textures_ids.append(0)
         
         if self.type==13: # Ceu
-            self.kd = 0.9
+            self.ka = 1.5
+            self.kd = 0
             self.qtd_texturas = 19
             texturas = glGenTextures(self.qtd_texturas)
             self.load_texture_from_file(17,'textures/sky_day.jpg')

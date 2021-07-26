@@ -25,7 +25,7 @@ vertex_code = """
             gl_Position = projection * view * model * vec4(position,1.0);
             out_texture = vec2(texture_coord);
             out_fragPos = vec3(position);
-            out_normal = normals;
+            out_normal = vec3( model *vec4(normals, 1.0));   
         }
         """
 
@@ -41,6 +41,7 @@ fragment_code = """
         // Parametros da reflexao difusa
         uniform vec3 lightPos; // define coordenadas de posicao da luz
         uniform float kd; // coeficiente de reflexao difusa
+        uniform float id; // coeficiente da intensidade da luz difusa
 
         // Parametros da reflexao especular
         uniform vec3 viewPos; // Coordenadas do visualizador
@@ -62,7 +63,7 @@ fragment_code = """
             vec3 norm = normalize(out_normal); // normaliza vetores perpendiculares (N)
             vec3 lightDir = normalize(lightPos - out_fragPos); // direcao da luz normalizada (L)
             float diff = max(dot(norm, lightDir), 0.0); // verifica limite angular (entre 0 e 90 graus) (N.L)
-            vec3 diffuse = kd * diff * lightColor; // Componente da iluminacao difusa 
+            vec3 diffuse = id * kd * diff * lightColor; // Componente da iluminacao difusa 
 
             // Reflexao especular
             vec3 viewDir = normalize(viewPos - out_fragPos); // direcao do observador/camera normalizada (V)
